@@ -38,6 +38,7 @@
             button2 = new Button();
             label3 = new Label();
             label4 = new Label();
+            getmoremods = new Button();
             SuspendLayout();
             // 
             // button1
@@ -127,11 +128,22 @@
             label4.TabIndex = 10;
             label4.Text = "Download Progess Bar";
             // 
+            // getmoremods
+            // 
+            getmoremods.Location = new Point(12, 261);
+            getmoremods.Name = "getmoremods";
+            getmoremods.Size = new Size(576, 23);
+            getmoremods.TabIndex = 11;
+            getmoremods.Text = "Get More Mods";
+            getmoremods.UseVisualStyleBackColor = true;
+            getmoremods.Click += getmoremods_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(609, 273);
+            ClientSize = new Size(646, 365);
+            Controls.Add(getmoremods);
             Controls.Add(label4);
             Controls.Add(label3);
             Controls.Add(button2);
@@ -160,5 +172,6 @@
         private Button button2;
         private Label label3;
         private Label label4;
+        private Button getmoremods;
     }
 }

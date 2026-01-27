@@ -20,30 +20,20 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
         private string currentIngameMod = "";
         public Form1()
         {
+            initJsonDirectories();
             backgroundWorker = new BackgroundWorker();
             backgroundWorker.WorkerReportsProgress = true;
             backgroundWorker.DoWork += backgroundWorker_DoWork;
             backgroundWorker.ProgressChanged += backgroundWorker_ProgressChanged;
             backgroundWorker.RunWorkerCompleted += backgroundWorker_RunWorkerCompleted;
             InitializeComponent();
-            string[] bepInExMods = Directory.GetFiles("BepInExMods");
-            string[] ingameMods = Directory.GetFiles("IngameMods");
 
-            for (int i = 0; i < bepInExMods.Length; i++)
-            {
-                bepInExMods[i] = Path.GetFileNameWithoutExtension(bepInExMods[i]);
-            }
-
-            for (int i = 0; i < ingameMods.Length; i++)
-            {
-                ingameMods[i] = Path.GetFileNameWithoutExtension(ingameMods[i]);
-            }
+            initJsonFiles();
 
             this.comboBox1.DropDownStyle = ComboBoxStyle.DropDownList;
             this.comboBox2.DropDownStyle = ComboBoxStyle.DropDownList;
 
-            this.comboBox1.Items.AddRange(bepInExMods);
-            this.comboBox2.Items.AddRange(ingameMods);
+            reinitMods();
 
             this.comboBox1.SelectedIndexChanged += (s, e) =>
             {
@@ -65,6 +55,29 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
                 }
             };
 
+        }
+
+        private void reinitMods()
+        {
+            string[] bepInExMods = Directory.GetFiles("BepInExMods");
+            string[] ingameMods = Directory.GetFiles("IngameMods");
+
+            for (int i = 0; i < bepInExMods.Length; i++)
+            {
+                bepInExMods[i] = Path.GetFileNameWithoutExtension(bepInExMods[i]);
+            }
+
+            for (int i = 0; i < ingameMods.Length; i++)
+            {
+                ingameMods[i] = Path.GetFileNameWithoutExtension(ingameMods[i]);
+            }
+
+
+            this.comboBox1.Items.Clear();
+            this.comboBox2.Items.Clear();
+
+            this.comboBox1.Items.AddRange(bepInExMods);
+            this.comboBox2.Items.AddRange(ingameMods);
         }
         private void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
@@ -120,6 +133,11 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
         private void initDownloadProgressBar(string downloadUrl, string downloadFile, Action onWorkCompletedAction)
         {
+            if (backgroundWorker.IsBusy)
+            {
+                MessageBox.Show("Download already in progress, please wait!", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            } 
             this.downloadProgressBar.Maximum = 100;
             this.downloadProgressBar.Step = 1;
             this.downloadProgressBar.Value = 5;
@@ -244,7 +262,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
                 string newZipPath = isIngameMod ? ingameModsDownloads : bepInExModsDownloads;
                 newZipPath = Path.Combine(newZipPath, zipPath);
-                
+
                 if (File.Exists(newZipPath))
                 {
                     File.Delete(newZipPath);
@@ -263,7 +281,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
                 string bepinexdir = backupDir;
                 string backupFile = "backup_" + backupName + "_" + DateTime.Now.ToString("dd_MM_yyyy_HH_mm_ss") + ".zip";
 
-                backupFile = Path.Combine(isIngameMod ? backupDirectoryIngame : backupDirectoryBepInEx, backupFile); 
+                backupFile = Path.Combine(isIngameMod ? backupDirectoryIngame : backupDirectoryBepInEx, backupFile);
 
                 Directory.CreateDirectory(bepinexdir);
 
@@ -317,7 +335,79 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
             initDownloadProgressBar(downloadUrl, downloadFile, downloadVersionFileCompletedAction);
         }
 
-        private void initJsonFiles()
+        private void downloadFile(string downloadUrl, string downloadFile)
+        {
+            Action downloadModCompletedAction = () =>
+            {
+                string zipPath = downloadFile;
+                string mainAppPath = Process.GetCurrentProcess().MainModule.FileName;
+                string appDir = Path.GetDirectoryName(mainAppPath);
+                string extractDirectory = appDir;
+
+                try
+                {
+                    ZipFile.ExtractToDirectory(downloadFile, extractDirectory, Encoding.UTF8, true);
+                }
+                catch (Exception ex)
+                {
+                }
+            };
+
+            initDownloadProgressBar(downloadUrl, downloadFile, downloadModCompletedAction);
+        }
+
+        private void download2Files(string downloadUrl, string downloadFile_, string downloadUrl2, string downloadFile2)
+        {
+            Action downloadModReallyCompletedAction = () =>
+            {
+                string mainAppPath = Process.GetCurrentProcess().MainModule.FileName;
+                string appDir = Path.GetDirectoryName(mainAppPath);
+                string extractDirectory = appDir;
+
+                try
+                {
+                    ZipFile.ExtractToDirectory(downloadFile_, extractDirectory, Encoding.UTF8, true);
+                }
+                catch (Exception ex)
+                {
+                }
+
+                try
+                {
+                    ZipFile.ExtractToDirectory(downloadFile2, extractDirectory, Encoding.UTF8, true);
+                }
+                catch (Exception ex)
+                {
+                }
+
+                reinitMods();
+
+                if (File.Exists(downloadFile_))
+                {
+                    File.Delete(downloadFile_);
+                }
+
+                if (File.Exists(downloadFile2))
+                {
+                    File.Delete(downloadFile2); 
+                }
+
+                UpdateLabel.Text = "Download complete. Update complete...";
+
+                downloadProgressBar.Value = 0;
+
+                UpdateLabel.Text = "";
+            };
+
+            Action downloadModCompletedAction = () =>
+            {
+                initDownloadProgressBar(downloadUrl2, downloadFile2, downloadModReallyCompletedAction);
+            };
+
+            initDownloadProgressBar(downloadUrl, downloadFile_, downloadModCompletedAction);
+        }
+
+        private void initJsonDirectories()
         {
             string mainAppPath = Process.GetCurrentProcess().MainModule.FileName;
             string appDir = Path.GetDirectoryName(mainAppPath);
@@ -327,6 +417,53 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
             Directory.CreateDirectory(ingameMods);
             Directory.CreateDirectory(bepinexMods);
+        }
+
+        private void initJsonFiles()
+        {
+            try
+            {
+                string mainAppPath = Process.GetCurrentProcess().MainModule.FileName;
+                string appDir = Path.GetDirectoryName(mainAppPath);
+
+                string ingameMods = Path.Combine(appDir, "IngameMods");
+                string bepinexMods = Path.Combine(appDir, "BepInExMods");
+                string getmoremods = Path.Combine(appDir, "getmoremods.json");
+
+                Directory.CreateDirectory(ingameMods);
+                Directory.CreateDirectory(bepinexMods);
+
+                Dictionary<string, string> getmoremodss = new Dictionary<string, string>();
+
+                getmoremodss.Add("IngameMods", "https://github.com/wolfitdm/BitchlandModManager/releases/download/v1.0.0/IngameMods.zip");
+                getmoremodss.Add("BepInExMods", "https://github.com/wolfitdm/BitchlandModManager/releases/download/v1.0.0/BepInExMods.zip");
+
+                if (!File.Exists(getmoremods))
+                {
+                    File.WriteAllText(getmoremods, getmoremodss.ToJson());
+                }
+                else
+                {
+                    Dictionary<string, string> jsonFile = getmoremods.FromJson<Dictionary<string, string>>();
+                    if (jsonFile != null)
+                    {
+                        if (jsonFile.TryGetValue("IngameMods", out string ingameModsUrl))
+                        {
+                            getmoremodss["IngameMods"] = ingameModsUrl;
+                        }
+
+                        if (jsonFile.TryGetValue("BepInExMods", out string bepInExModsUrl))
+                        {
+                            getmoremodss["BepInExMods"] = bepInExModsUrl;
+                        }
+                    }
+                }
+
+                download2Files(getmoremodss["BepInExMods"], "BepInExMods.zip", getmoremodss["IngameMods"], "IngameMods.zip");
+            }
+            catch (Exception ex)
+            {
+            }
         }
         private void button1_Click(object sender, EventArgs e)
         {
@@ -341,6 +478,11 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
         private void button2_Click(object sender, EventArgs e)
         {
             initVersionFile("IngameMods", currentIngameMod, true);
+        }
+
+        private void getmoremods_Click(object sender, EventArgs e)
+        {
+            initJsonFiles();
         }
     }
 }
