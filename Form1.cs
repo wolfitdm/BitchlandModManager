@@ -18,6 +18,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
         private string currentBepInExMod = "";
         private string currentIngameMod = "";
+
         public Form1()
         {
             initJsonDirectories();
@@ -364,6 +365,56 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
                 string appDir = Path.GetDirectoryName(mainAppPath);
                 string extractDirectory = appDir;
 
+                initJsonDirectories();
+
+                string[] bepInExMods = Directory.GetFiles("BepInExMods");
+                string[] ingameMods = Directory.GetFiles("IngameMods");
+
+                Dictionary<string, string> bepInExFiles = new Dictionary<string, string>();
+                Dictionary<string, string> ingameModFiles = new Dictionary<string, string>();
+
+                for (int i = 0; i <  bepInExMods.Length; i++)
+                {
+                    try
+                    {
+                        string file = File.ReadAllText(bepInExMods[i]);
+                        Dictionary<string, string> jsonFile = file.FromJson<Dictionary<string, string>>();
+                        if (jsonFile == null)
+                        {
+                            continue;
+                        }
+
+                        if (jsonFile.TryGetValue("version", out string version))
+                        {
+                            bepInExFiles.Add(Path.GetFileNameWithoutExtension(bepInExMods[i]), version);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                    }
+                }
+
+                for (int i = 0; i < ingameMods.Length; i++)
+                {
+                    try
+                    {
+                        string file = File.ReadAllText(ingameMods[i]);
+                        Dictionary<string, string> jsonFile = file.FromJson<Dictionary<string, string>>();
+                        if (jsonFile == null)
+                        {
+                            continue;
+                        }
+
+                        if (jsonFile.TryGetValue("version", out string version))
+                        {
+                            ingameModFiles.Add(Path.GetFileNameWithoutExtension(ingameMods[i]), version);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                    }
+                }
+
                 try
                 {
                     ZipFile.ExtractToDirectory(downloadFile_, extractDirectory, Encoding.UTF8, true);
@@ -378,6 +429,59 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
                 }
                 catch (Exception ex)
                 {
+                }
+
+                string[] bepInExMods2 = Directory.GetFiles("BepInExMods");
+                string[] ingameMods2 = Directory.GetFiles("IngameMods");
+
+                for (int i = 0; i < bepInExMods2.Length; i++)
+                {
+                    try
+                    {
+                        string file = File.ReadAllText(bepInExMods2[i]);
+                        Dictionary<string, string> jsonFile = file.FromJson<Dictionary<string, string>>();
+
+                        if (jsonFile == null)
+                        {
+                            continue;
+                        }
+
+                        string key = Path.GetFileNameWithoutExtension(bepInExMods2[i]);
+
+                        if (bepInExFiles.ContainsKey(key))
+                        {
+                            jsonFile["version"] = bepInExFiles[key];
+                            File.WriteAllText(bepInExMods2[i], jsonFile.ToJson());
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                    }
+                }
+
+                for (int i = 0; i < ingameMods2.Length; i++)
+                {
+                    try
+                    {
+                        string file = File.ReadAllText(ingameMods2[i]);
+                        Dictionary<string, string> jsonFile = file.FromJson<Dictionary<string, string>>();
+
+                        if (jsonFile == null)
+                        {
+                            continue;
+                        }
+
+                        string key = Path.GetFileNameWithoutExtension(ingameMods2[i]);
+
+                        if (ingameModFiles.ContainsKey(key))
+                        {
+                            jsonFile["version"] = ingameModFiles[key];
+                            File.WriteAllText(ingameMods2[i], jsonFile.ToJson());
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                    }
                 }
 
                 reinitMods();
