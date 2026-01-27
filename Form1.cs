@@ -1,0 +1,346 @@
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO.Compression;
+using System.Net;
+using System.Text;
+using TinyJson;
+
+namespace BitchlandCheatConsoleUpdaterGuiVersion
+{
+    public partial class Form1 : Form
+    {
+        private BackgroundWorker backgroundWorker;
+        private string currentDownloadUrl;
+        private string currentDownloadFile;
+        private Dictionary<string, string> currentModJson;
+        private string currentModJsonFileName;
+        private List<Action> onWorkCompleted = new List<Action>();
+
+        private string currentBepInExMod = "";
+        private string currentIngameMod = "";
+        public Form1()
+        {
+            backgroundWorker = new BackgroundWorker();
+            backgroundWorker.WorkerReportsProgress = true;
+            backgroundWorker.DoWork += backgroundWorker_DoWork;
+            backgroundWorker.ProgressChanged += backgroundWorker_ProgressChanged;
+            backgroundWorker.RunWorkerCompleted += backgroundWorker_RunWorkerCompleted;
+            InitializeComponent();
+            string[] bepInExMods = Directory.GetFiles("BepInExMods");
+            string[] ingameMods = Directory.GetFiles("IngameMods");
+
+            for (int i = 0; i < bepInExMods.Length; i++)
+            {
+                bepInExMods[i] = Path.GetFileNameWithoutExtension(bepInExMods[i]);
+            }
+
+            for (int i = 0; i < ingameMods.Length; i++)
+            {
+                ingameMods[i] = Path.GetFileNameWithoutExtension(ingameMods[i]);
+            }
+
+            this.comboBox1.DropDownStyle = ComboBoxStyle.DropDownList;
+            this.comboBox2.DropDownStyle = ComboBoxStyle.DropDownList;
+
+            this.comboBox1.Items.AddRange(bepInExMods);
+            this.comboBox2.Items.AddRange(ingameMods);
+
+            this.comboBox1.SelectedIndexChanged += (s, e) =>
+            {
+                object obj = this.comboBox1.SelectedItem;
+
+                if (obj != null && obj is string)
+                {
+                    this.currentBepInExMod = (string)obj;
+                }
+            };
+
+            this.comboBox2.SelectedIndexChanged += (s, e) =>
+            {
+                object obj = this.comboBox2.SelectedItem;
+
+                if (obj != null && obj is string)
+                {
+                    this.currentIngameMod = (string)obj;
+                }
+            };
+
+        }
+        private void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            UpdateLabel.Text = "Start Download... Please Wait...";
+            var worker = sender as BackgroundWorker;
+            try
+            {
+                using (var client = new WebClient())
+                {
+                    client.DownloadFile(currentDownloadUrl, currentDownloadFile);
+                    client.DownloadProgressChanged += (s, e) =>
+                    {
+                        worker.ReportProgress(e.ProgressPercentage);
+                    };
+                    client.DownloadFileCompleted += (s, e) =>
+                    {
+                        worker.ReportProgress(100);
+                        // any other code to process the file
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                worker.ReportProgress(100);
+            }
+        }
+
+        private void backgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            downloadProgressBar.Value = e.ProgressPercentage;
+        }
+
+        private void backgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            downloadProgressBar.Value = 100;
+
+            if (e.Cancelled)
+            {
+                MessageBox.Show("The user has be cancelled the download!", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            else if (e.Error != null)
+            {
+                MessageBox.Show($"Error: {e.Error.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            for (int i = 0; i < onWorkCompleted.Count; i++)
+            {
+                onWorkCompleted[i].Invoke();
+            }
+        }
+
+        private void initDownloadProgressBar(string downloadUrl, string downloadFile, Action onWorkCompletedAction)
+        {
+            this.downloadProgressBar.Maximum = 100;
+            this.downloadProgressBar.Step = 1;
+            this.downloadProgressBar.Value = 5;
+            currentDownloadUrl = downloadUrl;
+            currentDownloadFile = downloadFile;
+            backgroundWorker.RunWorkerAsync();
+            onWorkCompleted.Clear();
+            onWorkCompleted.Add(onWorkCompletedAction);
+        }
+        private void initVersionFile(string path, string mod, bool isIngameMod)
+        {
+            string modFile = Path.Combine(path, mod + ".json");
+
+            if (!File.Exists(modFile))
+            {
+                return;
+            }
+
+            string file = File.ReadAllText(modFile);
+            Dictionary<string, string> jsonFile = new Dictionary<string, string>();
+
+            jsonFile = file.FromJson<Dictionary<string, string>>();
+
+            string version = "v1.0.0";
+            string downloadUrl = "";
+            string downloadFile = "";
+
+            if (jsonFile.TryGetValue("version", out string modVersion))
+            {
+                version = modVersion;
+            }
+            else
+            {
+                MessageBox.Show("version", "Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (jsonFile.TryGetValue("versionurl", out string versionurl))
+            {
+                downloadUrl = versionurl;
+            }
+            else
+            {
+                MessageBox.Show("versionurl", "Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (jsonFile.TryGetValue("versionfile", out string versionfile))
+            {
+                downloadFile = versionfile;
+            }
+            else
+            {
+                MessageBox.Show("downloadFile", "Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (File.Exists(downloadFile))
+            {
+                File.Delete(downloadFile);
+            }
+
+            string downloadUrlMod = "";
+            string downloadFileMod = "";
+
+            if (jsonFile.TryGetValue("downloadurl", out string downloadUrlReal))
+            {
+                downloadUrlMod = downloadUrlReal;
+            }
+            else
+            {
+                MessageBox.Show("downloadUrlMod", "Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (jsonFile.TryGetValue("downloadfile", out string downloadFileReal))
+            {
+                downloadFileMod = downloadFileReal;
+            }
+            else
+            {
+                MessageBox.Show("downloadFileMod", "Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            currentModJson = jsonFile;
+            currentModJsonFileName = modFile;
+
+            this.downloadProgressBar.Maximum = 100;
+            this.downloadProgressBar.Step = 1;
+            this.downloadProgressBar.Value = 5;
+
+            string defaultText = this.UpdateLabel.Text;
+
+            this.UpdateLabel.Text = "Download Version File from this mod... please wait";
+
+            Action downloadModCompletedAction = () =>
+            {
+                string zipPath = downloadFileMod;
+                string mainAppPath = Process.GetCurrentProcess().MainModule.FileName;
+                string appDir = Path.GetDirectoryName(mainAppPath);
+                string extractDirectory = appDir;
+                string backupName = "BepInEx";
+                string backupDir = Path.Combine(extractDirectory, backupName);
+
+                string backupDirectoryBepInEx = "BepInExMods_Backups";
+                string backupDirectoryIngame = "IngameMods_Backups";
+
+                string bepInExModsDownloads = "BepInExMods_Downloads";
+                string ingameModsDownloads = "IngameMods_Downloads";
+
+                backupDirectoryBepInEx = Path.Combine(appDir, backupDirectoryBepInEx);
+                backupDirectoryIngame = Path.Combine(appDir, backupDirectoryIngame);
+
+                bepInExModsDownloads = Path.Combine(appDir, bepInExModsDownloads);
+                ingameModsDownloads = Path.Combine(appDir, ingameModsDownloads);
+
+                Directory.CreateDirectory(backupDirectoryBepInEx);
+                Directory.CreateDirectory(backupDirectoryIngame);
+                Directory.CreateDirectory(bepInExModsDownloads);
+                Directory.CreateDirectory(ingameModsDownloads);
+
+                string newZipPath = isIngameMod ? ingameModsDownloads : bepInExModsDownloads;
+                newZipPath = Path.Combine(newZipPath, zipPath);
+                
+                if (File.Exists(newZipPath))
+                {
+                    File.Delete(newZipPath);
+                }
+
+                File.Move(zipPath, newZipPath);
+
+                if (isIngameMod)
+                {
+                    backupDir = "Assets";
+                    backupDir = Path.Combine(backupDir, "Mods");
+                    extractDirectory = Path.Combine(extractDirectory, backupDir);
+                    backupName = "Assets_Mods";
+                }
+
+                string bepinexdir = backupDir;
+                string backupFile = "backup_" + backupName + "_" + DateTime.Now.ToString("dd_MM_yyyy_HH_mm_ss") + ".zip";
+
+                backupFile = Path.Combine(isIngameMod ? backupDirectoryIngame : backupDirectoryBepInEx, backupFile); 
+
+                Directory.CreateDirectory(bepinexdir);
+
+                try
+                {
+                    ZipFile.CreateFromDirectory(bepinexdir, backupFile, CompressionLevel.SmallestSize, true);
+                }
+                catch
+                {
+
+                }
+
+                try
+                {
+                    ZipFile.ExtractToDirectory(newZipPath, extractDirectory, Encoding.UTF8, true);
+                    UpdateLabel.Text = "Download complete. Update complete...";
+                    try
+                    {
+                        File.WriteAllText(currentModJsonFileName, currentModJson.ToJson());
+                    }
+                    catch { }
+                    MessageBox.Show("Download complete. Update complete...", "Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Update failed", "Failed", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                this.UpdateLabel.Text = defaultText;
+            };
+
+            Action downloadVersionFileCompletedAction = () =>
+            {
+                string content = File.ReadAllText(downloadFile);
+                Dictionary<string, string> contentFile = content.FromJson<Dictionary<string, string>>();
+                if (contentFile.TryGetValue("version", out string modVersion))
+                {
+                    if (modVersion != version)
+                    {
+                        MessageBox.Show($"Current Version {version}, New version {modVersion} available download it!", "Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        currentModJson["version"] = modVersion;
+                        initDownloadProgressBar(downloadUrlMod, downloadFileMod, downloadModCompletedAction);
+                    }
+                    else
+                    {
+                        MessageBox.Show($"Current Version {version}, No new version available!", "Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+                this.UpdateLabel.Text = defaultText;
+            };
+
+            initDownloadProgressBar(downloadUrl, downloadFile, downloadVersionFileCompletedAction);
+        }
+
+        private void initJsonFiles()
+        {
+            string mainAppPath = Process.GetCurrentProcess().MainModule.FileName;
+            string appDir = Path.GetDirectoryName(mainAppPath);
+
+            string ingameMods = Path.Combine(appDir, "IngameMods");
+            string bepinexMods = Path.Combine(appDir, "BepInExMods");
+
+            Directory.CreateDirectory(ingameMods);
+            Directory.CreateDirectory(bepinexMods);
+        }
+        private void button1_Click(object sender, EventArgs e)
+        {
+            initVersionFile("BepInExMods", currentBepInExMod, false);
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            initVersionFile("IngameMods", currentIngameMod, true);
+        }
+    }
+}
