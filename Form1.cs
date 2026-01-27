@@ -1,8 +1,11 @@
+using Microsoft.VisualBasic;
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Net;
 using System.Text;
+using System.Windows.Forms;
 using TinyJson;
 
 namespace BitchlandCheatConsoleUpdaterGuiVersion
@@ -18,6 +21,13 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
         private string currentBepInExMod = "";
         private string currentIngameMod = "";
+        private string currentBepInExModsBackup = "";
+        private string currentIngameModsBackup = "";
+        private int currentBepInExModsBackupIndex = 0;
+        private int currentIngameModsBackupIndex = 0;
+
+        private string[] currentBepInExModsBackups = null;
+        private string[] currentIngameModsBackups = null;
 
         public Form1()
         {
@@ -33,8 +43,11 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
             this.comboBox1.DropDownStyle = ComboBoxStyle.DropDownList;
             this.comboBox2.DropDownStyle = ComboBoxStyle.DropDownList;
+            this.comboBox3.DropDownStyle = ComboBoxStyle.DropDownList;
+            this.comboBox4.DropDownStyle = ComboBoxStyle.DropDownList;
 
             reinitMods();
+            reinitBackups();
 
             this.comboBox1.SelectedIndexChanged += (s, e) =>
             {
@@ -56,6 +69,27 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
                 }
             };
 
+            this.comboBox3.SelectedIndexChanged += (s, e) =>
+            {
+                object obj = this.comboBox3.SelectedItem;
+
+                if (obj != null && obj is string)
+                {
+                    this.currentBepInExModsBackup = (string)obj;
+                    this.currentBepInExModsBackupIndex = this.comboBox3.SelectedIndex;
+                }
+            };
+
+            this.comboBox4.SelectedIndexChanged += (s, e) =>
+            {
+                object obj = this.comboBox4.SelectedItem;
+
+                if (obj != null && obj is string)
+                {
+                    this.currentIngameModsBackup = (string)obj;
+                    this.currentIngameModsBackupIndex = this.comboBox4.SelectedIndex;
+                }
+            };
         }
 
         private void reinitMods()
@@ -138,7 +172,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
             {
                 MessageBox.Show("Download already in progress, please wait!", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
-            } 
+            }
             this.downloadProgressBar.Maximum = 100;
             this.downloadProgressBar.Step = 1;
             this.downloadProgressBar.Value = 5;
@@ -295,6 +329,8 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
                 }
 
+                reinitBackups();
+
                 try
                 {
                     ZipFile.ExtractToDirectory(newZipPath, extractDirectory, Encoding.UTF8, true);
@@ -321,13 +357,22 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
                 {
                     if (modVersion != version)
                     {
-                        MessageBox.Show($"Current Version {version}, New version {modVersion} available download it!", "Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        currentModJson["version"] = modVersion;
-                        initDownloadProgressBar(downloadUrlMod, downloadFileMod, downloadModCompletedAction);
+                        DialogResult dialogResult = MessageBox.Show($"Current Version {version}, New version {modVersion} available, download and install it? Yes/No/Cancel", "Complete", MessageBoxButtons.YesNoCancel);
+
+                        if (dialogResult == DialogResult.Yes)
+                        {
+                            currentModJson["version"] = modVersion;
+                            initDownloadProgressBar(downloadUrlMod, downloadFileMod, downloadModCompletedAction);
+                        }
                     }
                     else
                     {
-                        MessageBox.Show($"Current Version {version}, No new version available!", "Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        DialogResult dialogResult = MessageBox.Show($"Current Version {version}, No new version available! Still download and install it ? Yes/No/Cancel", "Complete", MessageBoxButtons.YesNoCancel);
+
+                        if (dialogResult == DialogResult.Yes)
+                        {
+                            initDownloadProgressBar(downloadUrlMod, downloadFileMod, downloadModCompletedAction);
+                        }
                     }
                 }
                 this.UpdateLabel.Text = defaultText;
@@ -373,7 +418,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
                 Dictionary<string, string> bepInExFiles = new Dictionary<string, string>();
                 Dictionary<string, string> ingameModFiles = new Dictionary<string, string>();
 
-                for (int i = 0; i <  bepInExMods.Length; i++)
+                for (int i = 0; i < bepInExMods.Length; i++)
                 {
                     try
                     {
@@ -493,7 +538,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
                 if (File.Exists(downloadFile2))
                 {
-                    File.Delete(downloadFile2); 
+                    File.Delete(downloadFile2);
                 }
 
                 UpdateLabel.Text = "Download complete. Update complete...";
@@ -571,6 +616,11 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
         }
         private void button1_Click(object sender, EventArgs e)
         {
+            if (currentBepInExMod == null || currentBepInExMod.Length == 0)
+            {
+                return;
+            }
+
             initVersionFile("BepInExMods", currentBepInExMod, false);
         }
 
@@ -581,12 +631,318 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
         private void button2_Click(object sender, EventArgs e)
         {
+            if (currentIngameMod == null || currentIngameMod.Length == 0)
+            {
+                return;
+            }
+
             initVersionFile("IngameMods", currentIngameMod, true);
         }
 
         private void getmoremods_Click(object sender, EventArgs e)
         {
             initJsonFiles();
+        }
+        private string createBackup(bool isIngameMod)
+        {
+            string mainAppPath = Process.GetCurrentProcess().MainModule.FileName;
+            string appDir = Path.GetDirectoryName(mainAppPath);
+            string extractDirectory = appDir;
+            string backupName = "BepInEx";
+            string backupDir = Path.Combine(extractDirectory, backupName);
+
+            string backupDirectoryBepInExDefault = "BepInExMods_Backups";
+            string backupDirectoryIngameDefault = "IngameMods_Backups";
+
+            string bepInExModsDownloads = "BepInExMods_Downloads";
+            string ingameModsDownloads = "IngameMods_Downloads";
+
+            string backupDirectoryBepInEx = Path.Combine(appDir, backupDirectoryBepInExDefault);
+            string backupDirectoryIngame = Path.Combine(appDir, backupDirectoryIngameDefault);
+
+            bepInExModsDownloads = Path.Combine(appDir, bepInExModsDownloads);
+            ingameModsDownloads = Path.Combine(appDir, ingameModsDownloads);
+
+            Directory.CreateDirectory(backupDirectoryBepInEx);
+            Directory.CreateDirectory(backupDirectoryIngame);
+            Directory.CreateDirectory(bepInExModsDownloads);
+            Directory.CreateDirectory(ingameModsDownloads);
+
+            if (isIngameMod)
+            {
+                backupDir = "Assets";
+                backupDir = Path.Combine(backupDir, "Mods");
+                extractDirectory = Path.Combine(extractDirectory, backupDir);
+                backupName = "Assets_Mods";
+            }
+
+            string bepinexdir = backupDir;
+            string backupFileDefault = "backup_" + backupName + "_" + DateTime.Now.ToString("dd_MM_yyyy_HH_mm_ss") + ".zip";
+
+            string backupFile = Path.Combine(isIngameMod ? backupDirectoryIngame : backupDirectoryBepInEx, backupFileDefault);
+
+            Directory.CreateDirectory(bepinexdir);
+
+            try
+            {
+                ZipFile.CreateFromDirectory(bepinexdir, backupFile, CompressionLevel.SmallestSize, true);
+            }
+            catch
+            {
+
+            }
+
+            reinitBackups();
+
+            string installedBackupDir = isIngameMod ? backupDirectoryIngameDefault : backupDirectoryBepInExDefault;
+
+            return Path.Combine(installedBackupDir, backupFileDefault);
+        }
+
+        private void reinitBackups()
+        {
+            try
+            {
+                string mainAppPath = Process.GetCurrentProcess().MainModule.FileName;
+                string appDir = Path.GetDirectoryName(mainAppPath);
+
+                string ingameMods = Path.Combine(appDir, "IngameMods_Backups");
+                string bepinexMods = Path.Combine(appDir, "BepInExMods_Backups");
+
+                Directory.CreateDirectory(ingameMods);
+                Directory.CreateDirectory(bepinexMods);
+
+                string[] bepInExModsBackups = Directory.GetFiles("BepInExMods_Backups");
+                string[] ingameModsBackups = Directory.GetFiles("IngameMods_Backups");
+
+                currentBepInExModsBackups = new string[bepInExModsBackups.Length];
+                currentIngameModsBackups = new string[ingameModsBackups.Length];
+
+                for (int i = 0; i < bepInExModsBackups.Length; i++)
+                {
+                    currentBepInExModsBackups[i] = bepInExModsBackups[i];
+                    bepInExModsBackups[i] = Path.GetFileNameWithoutExtension(bepInExModsBackups[i]);
+                    string[] splits = bepInExModsBackups[i].Split("_");
+
+                    string newString = "";
+
+                    string day = "";
+                    string month = "";
+                    string year = "";
+                    string hour = "";
+                    string minute = "";
+                    string seconds = "";
+
+                    int length = splits.Length;
+                    for (int j = 0; j < splits.Length; j++)
+                    {
+                        switch (splits[j])
+                        {
+                            case "Assets":
+                            case "Mods":
+                            case "backup":
+                            case "BepInEx":
+                                {
+                                    continue;
+                                }
+                                break;
+
+                            default:
+                                {
+                                    if (day == string.Empty)
+                                    {
+                                        day = splits[j];
+                                    }
+                                    else if (month == string.Empty)
+                                    {
+                                        month = splits[j];
+                                    }
+                                    else if (year == string.Empty)
+                                    {
+                                        year = splits[j];
+                                    }
+                                    else if (hour == string.Empty)
+                                    {
+                                        hour = splits[j];
+                                    }
+                                    else if (minute == string.Empty)
+                                    {
+                                        minute = splits[j];
+                                    }
+                                    else if (seconds == string.Empty)
+                                    {
+                                        seconds = splits[j];
+                                    }
+                                }
+                                break;
+                        }
+                    }
+
+                    newString = hour + ":" + minute + ":" + seconds + " - " + day + "." + month + "." + year;
+
+                    bepInExModsBackups[i] = newString;
+                }
+
+                for (int i = 0; i < ingameModsBackups.Length; i++)
+                {
+                    currentIngameModsBackups[i] = ingameModsBackups[i];
+                    ingameModsBackups[i] = Path.GetFileNameWithoutExtension(ingameModsBackups[i]);
+                    string[] splits = ingameModsBackups[i].Split("_");
+
+                    string newString = "";
+
+                    int length = splits.Length;
+                    string day = "";
+                    string month = "";
+                    string year = "";
+                    string hour = "";
+                    string minute = "";
+                    string seconds = "";
+                    for (int j = 0; j < splits.Length; j++)
+                    {
+                        switch (splits[j])
+                        {
+                            case "Assets":
+                            case "Mods":
+                            case "backup":
+                            case "BepInEx":
+                                {
+                                    continue;
+                                }
+                                break;
+
+                            default:
+                                {
+                                    if (day == string.Empty)
+                                    {
+                                        day = splits[j];
+                                    }
+                                    else if (month == string.Empty)
+                                    {
+                                        month = splits[j];
+                                    }
+                                    else if (year == string.Empty)
+                                    {
+                                        year = splits[j];
+                                    }
+                                    else if (hour == string.Empty)
+                                    {
+                                        hour = splits[j];
+                                    }
+                                    else if (minute == string.Empty)
+                                    {
+                                        minute = splits[j];
+                                    }
+                                    else if (seconds == string.Empty)
+                                    {
+                                        seconds = splits[j];
+                                    }
+                                }
+                                break;
+                        }
+                    }
+
+                    newString = hour + ":" + minute + ":" + seconds + " - " + day + "." + month + "." + year;
+
+                    ingameModsBackups[i] = newString;
+                }
+
+
+                this.comboBox3.Items.Clear();
+                this.comboBox4.Items.Clear();
+
+                this.comboBox3.Items.AddRange(bepInExModsBackups);
+                this.comboBox4.Items.AddRange(ingameModsBackups);
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        private void initBackupFile(string backupFileName, int index, bool ingameMod)
+        {
+            string backupDirectory = ingameMod ? "IngameMods_Backups" : "BepInExMods_Backups";
+
+            downloadProgressBar.Value = 0;
+
+            try
+            {
+                string mainAppPath = Process.GetCurrentProcess().MainModule.FileName;
+                string appDir = Path.GetDirectoryName(mainAppPath);
+
+                string backupModsDir = Path.Combine(appDir, backupDirectory);
+
+                Directory.CreateDirectory(backupModsDir);
+
+                string modPath = ingameMod ? currentIngameModsBackups[index] : currentBepInExModsBackups[index];
+
+                string extractDirectory = ingameMod ? Path.Combine(appDir, "Assets") : appDir;
+
+                string modDirectory = ingameMod ? Path.Combine(extractDirectory, "Mods") : Path.Combine(extractDirectory, "BepInEx");
+
+                DialogResult dialogResult = MessageBox.Show("Delete the old mod directory ? Yes/No/Cancel", "Delete the old mod directory?", MessageBoxButtons.YesNoCancel);
+
+                if (dialogResult == DialogResult.Yes)
+                {
+                    if (Directory.Exists(modDirectory))
+                    {
+                        Directory.Delete(modDirectory, true);
+                    }
+
+                    Directory.CreateDirectory(modDirectory);
+                }
+                else if (dialogResult == DialogResult.No)
+                {
+                    Directory.CreateDirectory(modDirectory);
+                }
+
+                ZipFile.ExtractToDirectory(modPath, extractDirectory, true);
+
+                UpdateLabel.Text = "Backup installed complete...";
+
+                downloadProgressBar.Value = 100;
+
+                MessageBox.Show("Backup installed complete...", "Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            if (currentBepInExModsBackup == null || currentBepInExModsBackup.Length == 0)
+            {
+                return;
+            }
+
+            initBackupFile(currentBepInExModsBackup, currentBepInExModsBackupIndex, false);
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            if (currentIngameModsBackup == null || currentIngameModsBackup.Length == 0)
+            {
+                return;
+            }
+
+            initBackupFile(currentIngameModsBackup, currentIngameModsBackupIndex, true);
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            downloadProgressBar.Value = 0;
+            string backupCreated = createBackup(false);
+            downloadProgressBar.Value = 100;
+            MessageBox.Show($"Backup created {backupCreated} complete...", "Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            downloadProgressBar.Value = 0;
+            string backupCreated = createBackup(true);
+            downloadProgressBar.Value = 100;
+            MessageBox.Show($"Backup created {backupCreated} complete...", "Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
 }

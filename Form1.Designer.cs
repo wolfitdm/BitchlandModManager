@@ -39,6 +39,14 @@
             label3 = new Label();
             label4 = new Label();
             getmoremods = new Button();
+            label5 = new Label();
+            comboBox3 = new ComboBox();
+            label6 = new Label();
+            comboBox4 = new ComboBox();
+            button3 = new Button();
+            button4 = new Button();
+            button5 = new Button();
+            button6 = new Button();
             SuspendLayout();
             // 
             // button1
@@ -138,11 +146,93 @@
             getmoremods.UseVisualStyleBackColor = true;
             getmoremods.Click += getmoremods_Click;
             // 
+            // label5
+            // 
+            label5.AutoSize = true;
+            label5.Location = new Point(14, 305);
+            label5.Name = "label5";
+            label5.Size = new Size(126, 15);
+            label5.TabIndex = 12;
+            label5.Text = "BepInExMods Backups";
+            // 
+            // comboBox3
+            // 
+            comboBox3.FormattingEnabled = true;
+            comboBox3.Location = new Point(14, 338);
+            comboBox3.Name = "comboBox3";
+            comboBox3.Size = new Size(479, 23);
+            comboBox3.TabIndex = 13;
+            // 
+            // label6
+            // 
+            label6.AutoSize = true;
+            label6.Location = new Point(12, 376);
+            label6.Name = "label6";
+            label6.Size = new Size(124, 15);
+            label6.TabIndex = 14;
+            label6.Text = "IngameMods Backups";
+            // 
+            // comboBox4
+            // 
+            comboBox4.FormattingEnabled = true;
+            comboBox4.Location = new Point(17, 405);
+            comboBox4.Name = "comboBox4";
+            comboBox4.Size = new Size(476, 23);
+            comboBox4.TabIndex = 15;
+            // 
+            // button3
+            // 
+            button3.Location = new Point(513, 337);
+            button3.Name = "button3";
+            button3.Size = new Size(75, 23);
+            button3.TabIndex = 16;
+            button3.Text = "Install";
+            button3.UseVisualStyleBackColor = true;
+            button3.Click += button3_Click;
+            // 
+            // button4
+            // 
+            button4.Location = new Point(513, 404);
+            button4.Name = "button4";
+            button4.Size = new Size(75, 23);
+            button4.TabIndex = 17;
+            button4.Text = "Install";
+            button4.UseVisualStyleBackColor = true;
+            button4.Click += button4_Click;
+            // 
+            // button5
+            // 
+            button5.Location = new Point(117, 73);
+            button5.Name = "button5";
+            button5.Size = new Size(177, 23);
+            button5.TabIndex = 18;
+            button5.Text = "Create Mods Backup";
+            button5.UseVisualStyleBackColor = true;
+            button5.Click += button5_Click;
+            // 
+            // button6
+            // 
+            button6.Location = new Point(117, 158);
+            button6.Name = "button6";
+            button6.Size = new Size(174, 23);
+            button6.TabIndex = 19;
+            button6.Text = "Create Mods Backup";
+            button6.UseVisualStyleBackColor = true;
+            button6.Click += button6_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(646, 365);
+            ClientSize = new Size(614, 455);
+            Controls.Add(button6);
+            Controls.Add(button5);
+            Controls.Add(button4);
+            Controls.Add(button3);
+            Controls.Add(comboBox4);
+            Controls.Add(label6);
+            Controls.Add(comboBox3);
+            Controls.Add(label5);
             Controls.Add(getmoremods);
             Controls.Add(label4);
             Controls.Add(label3);
@@ -173,5 +263,13 @@
         private Label label3;
         private Label label4;
         private Button getmoremods;
+        private Label label5;
+        private ComboBox comboBox3;
+        private Label label6;
+        private ComboBox comboBox4;
+        private Button button3;
+        private Button button4;
+        private Button button5;
+        private Button button6;
     }
 }
