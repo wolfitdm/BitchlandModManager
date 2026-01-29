@@ -621,6 +621,12 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
                 return;
             }
 
+            if (backgroundWorker.IsBusy)
+            {
+                MessageBox.Show("Download already in progress, please wait!", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
             initVersionFile("BepInExMods", currentBepInExMod, false);
         }
 
@@ -636,11 +642,23 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
                 return;
             }
 
+            if (backgroundWorker.IsBusy)
+            {
+                MessageBox.Show("Download already in progress, please wait!", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
             initVersionFile("IngameMods", currentIngameMod, true);
         }
 
         private void getmoremods_Click(object sender, EventArgs e)
         {
+            if (backgroundWorker.IsBusy)
+            {
+                MessageBox.Show("Download already in progress, please wait!", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
             initJsonFiles();
         }
         private string createBackup(bool isIngameMod)
@@ -916,6 +934,12 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
                 return;
             }
 
+            if (backgroundWorker.IsBusy)
+            {
+                MessageBox.Show("Download already in progress, please wait!", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
             initBackupFile(currentBepInExModsBackup, currentBepInExModsBackupIndex, false);
         }
 
@@ -926,11 +950,23 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
                 return;
             }
 
+            if (backgroundWorker.IsBusy)
+            {
+                MessageBox.Show("Download already in progress, please wait!", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
             initBackupFile(currentIngameModsBackup, currentIngameModsBackupIndex, true);
         }
 
         private void button5_Click(object sender, EventArgs e)
         {
+            if (backgroundWorker.IsBusy)
+            {
+                MessageBox.Show("Download already in progress, please wait!", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
             downloadProgressBar.Value = 0;
             string backupCreated = createBackup(false);
             downloadProgressBar.Value = 100;
@@ -939,6 +975,12 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
         private void button6_Click(object sender, EventArgs e)
         {
+            if (backgroundWorker.IsBusy)
+            {
+                MessageBox.Show("Download already in progress, please wait!", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
             downloadProgressBar.Value = 0;
             string backupCreated = createBackup(true);
             downloadProgressBar.Value = 100;
