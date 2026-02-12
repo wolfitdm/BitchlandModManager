@@ -47,6 +47,8 @@
             button4 = new Button();
             button5 = new Button();
             button6 = new Button();
+            helpBepInExMods = new Button();
+            helpIngameMods = new Button();
             SuspendLayout();
             // 
             // button1
@@ -220,11 +222,33 @@
             button6.UseVisualStyleBackColor = true;
             button6.Click += button6_Click;
             // 
+            // helpBepInExMods
+            // 
+            helpBepInExMods.Location = new Point(601, 112);
+            helpBepInExMods.Name = "helpBepInExMods";
+            helpBepInExMods.Size = new Size(75, 23);
+            helpBepInExMods.TabIndex = 20;
+            helpBepInExMods.Text = "Help";
+            helpBepInExMods.UseVisualStyleBackColor = true;
+            helpBepInExMods.Click += helpBepInExMods_Click;
+            // 
+            // helpIngameMods
+            // 
+            helpIngameMods.Location = new Point(601, 205);
+            helpIngameMods.Name = "helpIngameMods";
+            helpIngameMods.Size = new Size(75, 23);
+            helpIngameMods.TabIndex = 21;
+            helpIngameMods.Text = "Help";
+            helpIngameMods.UseVisualStyleBackColor = true;
+            helpIngameMods.Click += helpIngameMods_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(614, 455);
+            ClientSize = new Size(690, 455);
+            Controls.Add(helpIngameMods);
+            Controls.Add(helpBepInExMods);
             Controls.Add(button6);
             Controls.Add(button5);
             Controls.Add(button4);
@@ -271,5 +295,7 @@
         private Button button4;
         private Button button5;
         private Button button6;
+        private Button helpBepInExMods;
+        private Button helpIngameMods;
     }
 }

@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 using TinyJson;
@@ -28,6 +29,9 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
         private string[] currentBepInExModsBackups = null;
         private string[] currentIngameModsBackups = null;
+
+        private Dictionary<string,string> currentBepInExModsHelp = new Dictionary<string, string>();
+        private Dictionary<string,string> currentIngameModsHelp = new Dictionary<string, string>();
 
         public Form1()
         {
@@ -97,16 +101,76 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
             string[] bepInExMods = Directory.GetFiles("BepInExMods");
             string[] ingameMods = Directory.GetFiles("IngameMods");
 
+            string[] bepInExModsHelp = new string[bepInExMods.Length];
+            string[] ingameModsHelp = new string[ingameMods.Length];
+
             for (int i = 0; i < bepInExMods.Length; i++)
             {
+                try
+                {
+                    string file = File.ReadAllText(bepInExMods[i]);
+                    Dictionary<string, string> jsonFile = file.FromJson<Dictionary<string, string>>();
+                    
+                    if (jsonFile == null)
+                    {
+                        jsonFile = new Dictionary<string, string>();
+                        jsonFile.Add("help", "");
+                    }
+
+                    if (jsonFile.TryGetValue("help", out string help))
+                    {
+                        bepInExModsHelp[i] = help;
+                    } else
+                    {
+                        bepInExModsHelp[i] = "";
+                    }
+                }
+                catch (Exception ex)
+                {
+                }
                 bepInExMods[i] = Path.GetFileNameWithoutExtension(bepInExMods[i]);
             }
 
             for (int i = 0; i < ingameMods.Length; i++)
             {
+                try
+                {
+                    string file = File.ReadAllText(ingameMods[i]);
+                    Dictionary<string, string> jsonFile = file.FromJson<Dictionary<string, string>>();
+                    
+                    if (jsonFile == null)
+                    {
+                        jsonFile = new Dictionary<string, string>();
+                        jsonFile.Add("help", "");
+                    }
+
+                    if (jsonFile.TryGetValue("help", out string help))
+                    {
+                        ingameModsHelp[i] = help;
+                    } else
+                    {
+                        ingameModsHelp[i] = "";
+                    }
+                }
+                catch (Exception ex)
+                {
+                }
                 ingameMods[i] = Path.GetFileNameWithoutExtension(ingameMods[i]);
             }
 
+            this.currentBepInExModsHelp.Clear();
+
+            for (int i = 0; i < bepInExMods.Length; i++)
+            {
+                this.currentBepInExModsHelp.Add(bepInExMods[i], bepInExModsHelp[i]);
+            }
+
+            this.currentIngameModsHelp.Clear();
+
+            for (int i = 0; i < ingameModsHelp.Length; i++)
+            {
+                this.currentIngameModsHelp.Add(ingameMods[i], ingameModsHelp[i]);
+            }
 
             this.comboBox1.Items.Clear();
             this.comboBox2.Items.Clear();
@@ -985,6 +1049,106 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
             string backupCreated = createBackup(true);
             downloadProgressBar.Value = 100;
             MessageBox.Show($"Backup created {backupCreated} complete...", "Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        public static void OpenUrl(string url)
+        {
+            try
+            {
+                // .NET Core / .NET 5+ safe way
+                ProcessStartInfo psi = new ProcessStartInfo
+                {
+                    FileName = url,
+                    UseShellExecute = true
+                };
+                Process.Start(psi);
+            }
+            catch
+            {
+                // Fallback for older .NET or restricted environments
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    Process.Start(new ProcessStartInfo("cmd", $"/c start {url.Replace("&", "^&")}") { CreateNoWindow = true });
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    Process.Start("xdg-open", url);
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    Process.Start("open", url);
+                }
+                else
+                {
+                    return;
+                }
+            }
+        }
+        private void helpBepInExMods_Click(object sender, EventArgs e)
+        {
+            if (backgroundWorker.IsBusy)
+            {
+                MessageBox.Show("Download already in progress, please wait!", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (currentBepInExMod == null || currentBepInExMod.Length == 0)
+            {
+                return;
+            }
+
+            if (!currentBepInExModsHelp.ContainsKey(currentBepInExMod))
+            {
+                return;
+            }
+
+            string url = "";
+
+            try
+            {
+                url = currentBepInExModsHelp[currentBepInExMod];
+            }
+            catch { }
+
+            if (url == "")
+            {
+                return;
+            }
+
+            OpenUrl(url);
+        }
+
+        private void helpIngameMods_Click(object sender, EventArgs e)
+        {
+            if (backgroundWorker.IsBusy)
+            {
+                MessageBox.Show("Download already in progress, please wait!", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (currentIngameMod == null || currentIngameMod.Length == 0)
+            {
+                return;
+            }
+
+            if (!currentIngameModsHelp.ContainsKey(currentIngameMod))
+            {
+                return;
+            }
+
+            string url = "";
+
+            try
+            {
+                url = currentIngameModsHelp[currentIngameMod];
+            }
+            catch { }
+
+            if (url == "")
+            {
+                return;
+            }
+
+            OpenUrl(url);
         }
     }
 }
