@@ -31,70 +31,76 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
         private string[] currentBepInExModsBackups = null;
         private string[] currentIngameModsBackups = null;
 
-        private Dictionary<string,string> currentBepInExModsHelp = new Dictionary<string, string>();
-        private Dictionary<string,string> currentIngameModsHelp = new Dictionary<string, string>();
+        private Dictionary<string, string> currentBepInExModsHelp = new Dictionary<string, string>();
+        private Dictionary<string, string> currentIngameModsHelp = new Dictionary<string, string>();
 
         public Form1()
         {
-            initJsonDirectories();
-            backgroundWorker = new BackgroundWorker();
-            backgroundWorker.WorkerReportsProgress = true;
-            backgroundWorker.DoWork += backgroundWorker_DoWork;
-            backgroundWorker.ProgressChanged += backgroundWorker_ProgressChanged;
-            backgroundWorker.RunWorkerCompleted += backgroundWorker_RunWorkerCompleted;
-            InitializeComponent();
-
-            initJsonFiles();
-
-            this.comboBox1.DropDownStyle = ComboBoxStyle.DropDownList;
-            this.comboBox2.DropDownStyle = ComboBoxStyle.DropDownList;
-            this.comboBox3.DropDownStyle = ComboBoxStyle.DropDownList;
-            this.comboBox4.DropDownStyle = ComboBoxStyle.DropDownList;
-
-            reinitMods();
-            reinitBackups();
-
-            this.comboBox1.SelectedIndexChanged += (s, e) =>
+            try
             {
-                object obj = this.comboBox1.SelectedItem;
+                initJsonDirectories();
+                backgroundWorker = new BackgroundWorker();
+                backgroundWorker.WorkerReportsProgress = true;
+                backgroundWorker.DoWork += backgroundWorker_DoWork;
+                backgroundWorker.ProgressChanged += backgroundWorker_ProgressChanged;
+                backgroundWorker.RunWorkerCompleted += backgroundWorker_RunWorkerCompleted;
+                InitializeComponent();
 
-                if (obj != null && obj is string)
+                initJsonFiles();
+
+                this.comboBox1.DropDownStyle = ComboBoxStyle.DropDownList;
+                this.comboBox2.DropDownStyle = ComboBoxStyle.DropDownList;
+                this.comboBox3.DropDownStyle = ComboBoxStyle.DropDownList;
+                this.comboBox4.DropDownStyle = ComboBoxStyle.DropDownList;
+
+                reinitMods();
+                reinitBackups();
+
+                this.comboBox1.SelectedIndexChanged += (s, e) =>
                 {
-                    this.currentBepInExMod = (string)obj;
-                }
-            };
+                    object obj = this.comboBox1.SelectedItem;
 
-            this.comboBox2.SelectedIndexChanged += (s, e) =>
+                    if (obj != null && obj is string)
+                    {
+                        this.currentBepInExMod = (string)obj;
+                    }
+                };
+
+                this.comboBox2.SelectedIndexChanged += (s, e) =>
+                {
+                    object obj = this.comboBox2.SelectedItem;
+
+                    if (obj != null && obj is string)
+                    {
+                        this.currentIngameMod = (string)obj;
+                    }
+                };
+
+                this.comboBox3.SelectedIndexChanged += (s, e) =>
+                {
+                    object obj = this.comboBox3.SelectedItem;
+
+                    if (obj != null && obj is string)
+                    {
+                        this.currentBepInExModsBackup = (string)obj;
+                        this.currentBepInExModsBackupIndex = this.comboBox3.SelectedIndex;
+                    }
+                };
+
+                this.comboBox4.SelectedIndexChanged += (s, e) =>
+                {
+                    object obj = this.comboBox4.SelectedItem;
+
+                    if (obj != null && obj is string)
+                    {
+                        this.currentIngameModsBackup = (string)obj;
+                        this.currentIngameModsBackupIndex = this.comboBox4.SelectedIndex;
+                    }
+                };
+            }
+            catch (Exception ex)
             {
-                object obj = this.comboBox2.SelectedItem;
-
-                if (obj != null && obj is string)
-                {
-                    this.currentIngameMod = (string)obj;
-                }
-            };
-
-            this.comboBox3.SelectedIndexChanged += (s, e) =>
-            {
-                object obj = this.comboBox3.SelectedItem;
-
-                if (obj != null && obj is string)
-                {
-                    this.currentBepInExModsBackup = (string)obj;
-                    this.currentBepInExModsBackupIndex = this.comboBox3.SelectedIndex;
-                }
-            };
-
-            this.comboBox4.SelectedIndexChanged += (s, e) =>
-            {
-                object obj = this.comboBox4.SelectedItem;
-
-                if (obj != null && obj is string)
-                {
-                    this.currentIngameModsBackup = (string)obj;
-                    this.currentIngameModsBackupIndex = this.comboBox4.SelectedIndex;
-                }
-            };
+            }
         }
 
         private void reinitMods()
@@ -111,7 +117,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
                 {
                     string file = File.ReadAllText(bepInExMods[i]);
                     Dictionary<string, string> jsonFile = file.FromJson<Dictionary<string, string>>();
-                    
+
                     if (jsonFile == null)
                     {
                         jsonFile = new Dictionary<string, string>();
@@ -121,7 +127,8 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
                     if (jsonFile.TryGetValue("help", out string help))
                     {
                         bepInExModsHelp[i] = help;
-                    } else
+                    }
+                    else
                     {
                         bepInExModsHelp[i] = "";
                     }
@@ -138,7 +145,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
                 {
                     string file = File.ReadAllText(ingameMods[i]);
                     Dictionary<string, string> jsonFile = file.FromJson<Dictionary<string, string>>();
-                    
+
                     if (jsonFile == null)
                     {
                         jsonFile = new Dictionary<string, string>();
@@ -148,7 +155,8 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
                     if (jsonFile.TryGetValue("help", out string help))
                     {
                         ingameModsHelp[i] = help;
-                    } else
+                    }
+                    else
                     {
                         ingameModsHelp[i] = "";
                     }
@@ -471,13 +479,16 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
         {
             Action nextAction = null;
 
-            if ((i + 1) < length) {
-                 nextAction = buildAction(i + 1, length, downloadUrls, downloadFiles, lastAction);
-            } else {
-                 nextAction = () =>
-                 {
-                   lastAction.Invoke();
-                 };
+            if ((i + 1) < length)
+            {
+                nextAction = buildAction(i + 1, length, downloadUrls, downloadFiles, lastAction);
+            }
+            else
+            {
+                nextAction = () =>
+                {
+                    lastAction.Invoke();
+                };
             }
 
             string downloadUrl = downloadUrls[i];
@@ -485,7 +496,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
             Action action = () =>
             {
-               initDownloadProgressBar(downloadUrl, downloadFile, nextAction);
+                initDownloadProgressBar(downloadUrl, downloadFile, nextAction);
             };
 
             return action;
@@ -658,8 +669,10 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
                 };
 
                 initDownloadProgressBar(downloadUrls[0], downloadFiles[0], downloadModCompletedAction);
-            } else if (downloadFiles.Length > 2) {
-                
+            }
+            else if (downloadFiles.Length > 2)
+            {
+
                 int length = downloadFiles.Length;
 
                 Action firstAction = buildAction(0, length, downloadUrls, downloadFiles, downloadModReallyCompletedAction);
@@ -718,7 +731,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
                 for (int i = 0; i < files.Length; i++)
                 {
-                    files[i] =  Path.GetFileNameWithoutExtension(files[i]);
+                    files[i] = Path.GetFileNameWithoutExtension(files[i]);
 
                     getmoremodss = getModSource(files[i]);
 
@@ -769,7 +782,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
             }
         }
 
-        public Dictionary<string,string> getModSource(string name)
+        public Dictionary<string, string> getModSource(string name)
         {
             try
             {
@@ -790,7 +803,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
                 string allText = File.ReadAllText(modSource);
 
-                Dictionary<string,string> jsonFile = allText.FromJson<Dictionary<string, string>>();
+                Dictionary<string, string> jsonFile = allText.FromJson<Dictionary<string, string>>();
 
                 if (jsonFile == null)
                 {
@@ -802,7 +815,8 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
                     if (ingameModsUrl == null || ingameModsUrl == string.Empty)
                         return null;
                     getmoremodss["IngameMods"] = ingameModsUrl;
-                } else
+                }
+                else
                 {
                     return null;
                 }
@@ -812,7 +826,8 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
                     if (bepInExModsUrl == null || bepInExModsUrl == string.Empty)
                         return null;
                     getmoremodss["BepInExMods"] = bepInExModsUrl;
-                } else
+                }
+                else
                 {
                     return null;
                 }
@@ -850,18 +865,24 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
         private void button1_Click(object sender, EventArgs e)
         {
-            if (currentBepInExMod == null || currentBepInExMod.Length == 0)
+            try
             {
-                return;
-            }
+                if (currentBepInExMod == null || currentBepInExMod.Length == 0)
+                {
+                    return;
+                }
 
-            if (backgroundWorker.IsBusy)
+                if (backgroundWorker.IsBusy)
+                {
+                    MessageBox.Show("Download already in progress, please wait!", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                initVersionFile("BepInExMods", currentBepInExMod, false);
+            }
+            catch (Exception ex)
             {
-                MessageBox.Show("Download already in progress, please wait!", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
             }
-
-            initVersionFile("BepInExMods", currentBepInExMod, false);
         }
 
         private void label1_Click(object sender, EventArgs e)
@@ -871,29 +892,41 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
         private void button2_Click(object sender, EventArgs e)
         {
-            if (currentIngameMod == null || currentIngameMod.Length == 0)
+            try
             {
-                return;
-            }
+                if (currentIngameMod == null || currentIngameMod.Length == 0)
+                {
+                    return;
+                }
 
-            if (backgroundWorker.IsBusy)
+                if (backgroundWorker.IsBusy)
+                {
+                    MessageBox.Show("Download already in progress, please wait!", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                initVersionFile("IngameMods", currentIngameMod, true);
+            }
+            catch (Exception ex)
             {
-                MessageBox.Show("Download already in progress, please wait!", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
             }
-
-            initVersionFile("IngameMods", currentIngameMod, true);
         }
 
         private void getmoremods_Click(object sender, EventArgs e)
         {
-            if (backgroundWorker.IsBusy)
+            try
             {
-                MessageBox.Show("Download already in progress, please wait!", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
+                if (backgroundWorker.IsBusy)
+                {
+                    MessageBox.Show("Download already in progress, please wait!", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
 
-            initJsonFiles();
+                initJsonFiles();
+            }
+            catch (Exception ex)
+            {
+            }
         }
         private string createBackup(bool isIngameMod)
         {
@@ -1163,62 +1196,83 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
         private void button3_Click(object sender, EventArgs e)
         {
-            if (currentBepInExModsBackup == null || currentBepInExModsBackup.Length == 0)
+            try
             {
-                return;
-            }
+                if (currentBepInExModsBackup == null || currentBepInExModsBackup.Length == 0)
+                {
+                    return;
+                }
 
-            if (backgroundWorker.IsBusy)
+                if (backgroundWorker.IsBusy)
+                {
+                    MessageBox.Show("Download already in progress, please wait!", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                initBackupFile(currentBepInExModsBackup, currentBepInExModsBackupIndex, false);
+            } catch (Exception ex) 
             {
-                MessageBox.Show("Download already in progress, please wait!", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
             }
-
-            initBackupFile(currentBepInExModsBackup, currentBepInExModsBackupIndex, false);
         }
 
         private void button4_Click(object sender, EventArgs e)
         {
-            if (currentIngameModsBackup == null || currentIngameModsBackup.Length == 0)
+            try
             {
-                return;
-            }
+                if (currentIngameModsBackup == null || currentIngameModsBackup.Length == 0)
+                {
+                    return;
+                }
 
-            if (backgroundWorker.IsBusy)
+                if (backgroundWorker.IsBusy)
+                {
+                    MessageBox.Show("Download already in progress, please wait!", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                initBackupFile(currentIngameModsBackup, currentIngameModsBackupIndex, true);
+            } catch(Exception ex) 
             {
-                MessageBox.Show("Download already in progress, please wait!", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
             }
-
-            initBackupFile(currentIngameModsBackup, currentIngameModsBackupIndex, true);
         }
 
         private void button5_Click(object sender, EventArgs e)
         {
-            if (backgroundWorker.IsBusy)
+            try
             {
-                MessageBox.Show("Download already in progress, please wait!", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
+                if (backgroundWorker.IsBusy)
+                {
+                    MessageBox.Show("Download already in progress, please wait!", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
 
-            downloadProgressBar.Value = 0;
-            string backupCreated = createBackup(false);
-            downloadProgressBar.Value = 100;
-            MessageBox.Show($"Backup created {backupCreated} complete...", "Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                downloadProgressBar.Value = 0;
+                string backupCreated = createBackup(false);
+                downloadProgressBar.Value = 100;
+                MessageBox.Show($"Backup created {backupCreated} complete...", "Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            } catch (Exception ex)
+            {
+            }
         }
 
         private void button6_Click(object sender, EventArgs e)
         {
-            if (backgroundWorker.IsBusy)
+            try
             {
-                MessageBox.Show("Download already in progress, please wait!", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
+                if (backgroundWorker.IsBusy)
+                {
+                    MessageBox.Show("Download already in progress, please wait!", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
 
-            downloadProgressBar.Value = 0;
-            string backupCreated = createBackup(true);
-            downloadProgressBar.Value = 100;
-            MessageBox.Show($"Backup created {backupCreated} complete...", "Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                downloadProgressBar.Value = 0;
+                string backupCreated = createBackup(true);
+                downloadProgressBar.Value = 100;
+                MessageBox.Show($"Backup created {backupCreated} complete...", "Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+            }
         }
         public static void OpenUrl(string url)
         {
@@ -1255,70 +1309,85 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
         }
         private void helpBepInExMods_Click(object sender, EventArgs e)
         {
-            if (backgroundWorker.IsBusy)
-            {
-                MessageBox.Show("Download already in progress, please wait!", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
-
-            if (currentBepInExMod == null || currentBepInExMod.Length == 0)
-            {
-                return;
-            }
-
-            if (!currentBepInExModsHelp.ContainsKey(currentBepInExMod))
-            {
-                return;
-            }
-
-            string url = "";
-
             try
             {
-                url = currentBepInExModsHelp[currentBepInExMod];
-            }
-            catch { }
+                if (backgroundWorker.IsBusy)
+                {
+                    MessageBox.Show("Download already in progress, please wait!", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
 
-            if (url == "")
+                if (currentBepInExMod == null || currentBepInExMod.Length == 0)
+                {
+                    return;
+                }
+
+                if (!currentBepInExModsHelp.ContainsKey(currentBepInExMod))
+                {
+                    return;
+                }
+
+                string url = "";
+
+                try
+                {
+                    url = currentBepInExModsHelp[currentBepInExMod];
+                }
+                catch { }
+
+                if (url == "")
+                {
+                    return;
+                }
+
+                OpenUrl(url);
+            } catch (Exception ex) 
             {
-                return;
             }
-
-            OpenUrl(url);
         }
 
         private void helpIngameMods_Click(object sender, EventArgs e)
         {
-            if (backgroundWorker.IsBusy)
-            {
-                MessageBox.Show("Download already in progress, please wait!", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
-
-            if (currentIngameMod == null || currentIngameMod.Length == 0)
-            {
-                return;
-            }
-
-            if (!currentIngameModsHelp.ContainsKey(currentIngameMod))
-            {
-                return;
-            }
-
-            string url = "";
-
             try
             {
-                url = currentIngameModsHelp[currentIngameMod];
-            }
-            catch { }
+                if (backgroundWorker.IsBusy)
+                {
+                    MessageBox.Show("Download already in progress, please wait!", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
 
-            if (url == "")
+                if (currentIngameMod == null || currentIngameMod.Length == 0)
+                {
+                    return;
+                }
+
+                if (!currentIngameModsHelp.ContainsKey(currentIngameMod))
+                {
+                    return;
+                }
+
+                string url = "";
+
+                try
+                {
+                    url = currentIngameModsHelp[currentIngameMod];
+                }
+                catch { }
+
+                if (url == "")
+                {
+                    return;
+                }
+
+                OpenUrl(url);
+            } catch (Exception ex)
             {
-                return;
             }
+        }
 
-            OpenUrl(url);
+        private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }
