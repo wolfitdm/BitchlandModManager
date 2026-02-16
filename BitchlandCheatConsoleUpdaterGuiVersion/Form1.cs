@@ -2,6 +2,7 @@ using Microsoft.VisualBasic;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 using System.IO.Compression;
 using System.Net;
 using System.Runtime.InteropServices;
@@ -466,8 +467,52 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
             initDownloadProgressBar(downloadUrl, downloadFile, downloadModCompletedAction);
         }
 
-        private void download2Files(string downloadUrl, string downloadFile_, string downloadUrl2, string downloadFile2)
+        private Action buildAction(int i, int length, string[] downloadUrls, string[] downloadFiles, Action lastAction)
         {
+            Action nextAction = null;
+
+            if ((i + 1) < length) {
+                 nextAction = buildAction(i + 1, length, downloadUrls, downloadFiles, lastAction);
+            } else {
+                 nextAction = () =>
+                 {
+                   lastAction.Invoke();
+                 };
+            }
+
+            string downloadUrl = downloadUrls[i];
+            string downloadFile = downloadFiles[i];
+
+            Action action = () =>
+            {
+               initDownloadProgressBar(downloadUrl, downloadFile, nextAction);
+            };
+
+            return action;
+        }
+
+        private void download2Files(string[] downloadUrls, string[] downloadFiles)
+        {
+            if (downloadUrls == null || downloadFiles == null)
+            {
+                return;
+            }
+
+            if (downloadUrls.Length < 2 || downloadFiles.Length < 2)
+            {
+                return;
+            }
+
+            if (downloadUrls.Length != downloadFiles.Length)
+            {
+                return;
+            }
+
+            if (downloadFiles.Length % 2 != 0)
+            {
+                return;
+            }
+
             Action downloadModReallyCompletedAction = () =>
             {
                 string mainAppPath = Process.GetCurrentProcess().MainModule.FileName;
@@ -524,20 +569,15 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
                     }
                 }
 
-                try
+                for (int i = 0; i < downloadFiles.Length; i++)
                 {
-                    ZipFile.ExtractToDirectory(downloadFile_, extractDirectory, Encoding.UTF8, true);
-                }
-                catch (Exception ex)
-                {
-                }
-
-                try
-                {
-                    ZipFile.ExtractToDirectory(downloadFile2, extractDirectory, Encoding.UTF8, true);
-                }
-                catch (Exception ex)
-                {
+                    try
+                    {
+                        ZipFile.ExtractToDirectory(downloadFiles[i], extractDirectory, Encoding.UTF8, true);
+                    }
+                    catch (Exception ex)
+                    {
+                    }
                 }
 
                 string[] bepInExMods2 = Directory.GetFiles("BepInExMods");
@@ -595,14 +635,12 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
                 reinitMods();
 
-                if (File.Exists(downloadFile_))
+                for (int i = 0; i < downloadFiles.Length; i++)
                 {
-                    File.Delete(downloadFile_);
-                }
-
-                if (File.Exists(downloadFile2))
-                {
-                    File.Delete(downloadFile2);
+                    if (File.Exists(downloadFiles[i]))
+                    {
+                        File.Delete(downloadFiles[i]);
+                    }
                 }
 
                 UpdateLabel.Text = "Download complete. Update complete...";
@@ -612,12 +650,23 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
                 UpdateLabel.Text = "";
             };
 
-            Action downloadModCompletedAction = () =>
+            if (downloadFiles.Length == 2)
             {
-                initDownloadProgressBar(downloadUrl2, downloadFile2, downloadModReallyCompletedAction);
-            };
+                Action downloadModCompletedAction = () =>
+                {
+                    initDownloadProgressBar(downloadUrls[1], downloadFiles[1], downloadModReallyCompletedAction);
+                };
 
-            initDownloadProgressBar(downloadUrl, downloadFile_, downloadModCompletedAction);
+                initDownloadProgressBar(downloadUrls[0], downloadFiles[0], downloadModCompletedAction);
+            } else if (downloadFiles.Length > 2) {
+                
+                int length = downloadFiles.Length;
+
+                Action firstAction = buildAction(0, length, downloadUrls, downloadFiles, downloadModReallyCompletedAction);
+
+                firstAction.Invoke();
+            }
+
         }
 
         private void initJsonDirectories()
@@ -634,6 +683,12 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
         private void initJsonFiles()
         {
+            initModSource("getmoremods", "https://github.com/wolfitdm/BitchlandModManager/releases/download/v1.0.0/BepInExMods.zip", "https://github.com/wolfitdm/BitchlandModManager/releases/download/v1.0.0/IngameMods.zip", "BepInExMods.zip", "IngameMods.zip");
+            initModSources();
+        }
+
+        private void initModSources()
+        {
             try
             {
                 string mainAppPath = Process.GetCurrentProcess().MainModule.FileName;
@@ -641,43 +696,158 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
                 string ingameMods = Path.Combine(appDir, "IngameMods");
                 string bepinexMods = Path.Combine(appDir, "BepInExMods");
-                string getmoremods = Path.Combine(appDir, "getmoremods.json");
 
                 Directory.CreateDirectory(ingameMods);
                 Directory.CreateDirectory(bepinexMods);
 
-                Dictionary<string, string> getmoremodss = new Dictionary<string, string>();
+                Dictionary<string, string> getmoremodss = null;
 
-                getmoremodss.Add("IngameMods", "https://github.com/wolfitdm/BitchlandModManager/releases/download/v1.0.0/IngameMods.zip");
-                getmoremodss.Add("BepInExMods", "https://github.com/wolfitdm/BitchlandModManager/releases/download/v1.0.0/BepInExMods.zip");
+                List<string> downloadUrls = new List<string>();
+                List<string> downloadFiles = new List<string>();
 
-                if (!File.Exists(getmoremods))
+                string modsSources = Path.Combine(appDir, "ModsSources");
+
+                Directory.CreateDirectory(modsSources);
+
+                string[] files = Directory.GetFiles(modsSources);
+
+                if (files == null || files.Length == 0)
                 {
-                    File.WriteAllText(getmoremods, getmoremodss.ToJson());
+                    return;
                 }
-                else
+
+                for (int i = 0; i < files.Length; i++)
                 {
-                    Dictionary<string, string> jsonFile = getmoremods.FromJson<Dictionary<string, string>>();
-                    if (jsonFile != null)
+                    files[i] =  Path.GetFileNameWithoutExtension(files[i]);
+
+                    getmoremodss = getModSource(files[i]);
+
+                    if (getmoremodss == null)
                     {
-                        if (jsonFile.TryGetValue("IngameMods", out string ingameModsUrl))
-                        {
-                            getmoremodss["IngameMods"] = ingameModsUrl;
-                        }
-
-                        if (jsonFile.TryGetValue("BepInExMods", out string bepInExModsUrl))
-                        {
-                            getmoremodss["BepInExMods"] = bepInExModsUrl;
-                        }
+                        continue;
                     }
+
+                    downloadUrls.Add(getmoremodss["BepInExMods"]);
+                    downloadFiles.Add(getmoremodss["BepInExModsFileName"]);
+
+                    downloadUrls.Add(getmoremodss["IngameMods"]);
+                    downloadFiles.Add(getmoremodss["IngameModsFileName"]);
                 }
 
-                download2Files(getmoremodss["BepInExMods"], "BepInExMods.zip", getmoremodss["IngameMods"], "IngameMods.zip");
+                download2Files(downloadUrls.ToArray(), downloadFiles.ToArray());
             }
             catch (Exception ex)
             {
             }
         }
+        public bool initModSource(string name, string bepInExModsDownloadLink, string ingameModsDownloadLink, string bepInExModsFileName, string ingameModsFileName)
+        {
+            try
+            {
+                string mainAppPath = Process.GetCurrentProcess().MainModule.FileName;
+                string appDir = Path.GetDirectoryName(mainAppPath);
+                string modsSources = Path.Combine(appDir, "ModsSources");
+
+                Directory.CreateDirectory(modsSources);
+
+                string modSource = Path.Combine(modsSources, name + ".json");
+
+                Dictionary<string, string> getmoremodss = new Dictionary<string, string>();
+
+                getmoremodss.Add("IngameMods", ingameModsDownloadLink);
+                getmoremodss.Add("BepInExMods", bepInExModsDownloadLink);
+                getmoremodss.Add("IngameModsFileName", ingameModsFileName);
+                getmoremodss.Add("BepInExModsFileName", bepInExModsFileName);
+
+                File.WriteAllText(modSource, getmoremodss.ToJson());
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
+        public Dictionary<string,string> getModSource(string name)
+        {
+            try
+            {
+                string mainAppPath = Process.GetCurrentProcess().MainModule.FileName;
+                string appDir = Path.GetDirectoryName(mainAppPath);
+                string modsSources = Path.Combine(appDir, "ModsSources");
+
+                Directory.CreateDirectory(modsSources);
+
+                string modSource = Path.Combine(modsSources, name + ".json");
+
+                Dictionary<string, string> getmoremodss = new Dictionary<string, string>();
+
+                if (!File.Exists(modSource))
+                {
+                    return null;
+                }
+
+                string allText = File.ReadAllText(modSource);
+
+                Dictionary<string,string> jsonFile = allText.FromJson<Dictionary<string, string>>();
+
+                if (jsonFile == null)
+                {
+                    return null;
+                }
+
+                if (jsonFile.TryGetValue("IngameMods", out string ingameModsUrl))
+                {
+                    if (ingameModsUrl == null || ingameModsUrl == string.Empty)
+                        return null;
+                    getmoremodss["IngameMods"] = ingameModsUrl;
+                } else
+                {
+                    return null;
+                }
+
+                if (jsonFile.TryGetValue("BepInExMods", out string bepInExModsUrl))
+                {
+                    if (bepInExModsUrl == null || bepInExModsUrl == string.Empty)
+                        return null;
+                    getmoremodss["BepInExMods"] = bepInExModsUrl;
+                } else
+                {
+                    return null;
+                }
+
+                if (jsonFile.TryGetValue("IngameModsFileName", out string ingameModsFileName))
+                {
+                    if (ingameModsFileName == null || ingameModsFileName == string.Empty)
+                        return null;
+                    getmoremodss["IngameModsFileName"] = ingameModsFileName;
+                }
+                else
+                {
+                    return null;
+                }
+
+                if (jsonFile.TryGetValue("BepInExModsFileName", out string bepInExModsFileName))
+                {
+                    if (bepInExModsFileName == null || bepInExModsFileName == string.Empty)
+                        return null;
+                    getmoremodss["BepInExModsFileName"] = bepInExModsFileName;
+                }
+                else
+                {
+                    return null;
+                }
+
+
+                return getmoremodss;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
         private void button1_Click(object sender, EventArgs e)
         {
             if (currentBepInExMod == null || currentBepInExMod.Length == 0)
