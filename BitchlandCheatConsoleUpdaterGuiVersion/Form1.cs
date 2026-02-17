@@ -746,10 +746,44 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
                     }
 
                     downloadUrls.Add(getmoremodss["BepInExMods"]);
-                    downloadFiles.Add(getmoremodss["BepInExModsFileName"]);
+
+                    string prefix = "";
+                    int j = 0;
+                    
+                    string filename = Path.GetFileNameWithoutExtension(getmoremodss["BepInExModsFileName"]);
+
+                    string ext = Path.GetExtension(getmoremodss["BepInExModsFileName"]);
+
+                    string filename1 = filename + prefix + ext;
+
+                    while (downloadFiles.Contains(filename1))
+                    {
+                        j++;
+                        prefix = j.ToString();
+                        filename1 = filename + prefix + ext;
+                    }
+
+                    downloadFiles.Add(filename1);
 
                     downloadUrls.Add(getmoremodss["IngameMods"]);
-                    downloadFiles.Add(getmoremodss["IngameModsFileName"]);
+
+                    j = 0;
+                    prefix = "";
+
+                    filename = Path.GetFileNameWithoutExtension(getmoremodss["IngameModsFileName"]);
+
+                    ext = Path.GetExtension(getmoremodss["IngameModsFileName"]);
+
+                    filename1 = filename + prefix + ext;
+
+                    while (downloadFiles.Contains(filename1))
+                    {
+                        j++;
+                        prefix = j.ToString();
+                        filename1 = filename + prefix + ext;
+                    }
+
+                    downloadFiles.Add(filename1);
                 }
 
                 download2Files(downloadUrls.ToArray(), downloadFiles.ToArray());
