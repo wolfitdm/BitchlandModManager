@@ -424,6 +424,8 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
             Action downloadVersionFileCompletedAction = () =>
             {
+                if (!File.Exists(downloadFile))
+                    return;
                 string content = File.ReadAllText(downloadFile);
                 Dictionary<string, string> contentFile = content.FromJson<Dictionary<string, string>>();
                 if (contentFile.TryGetValue("version", out string modVersion))
@@ -458,6 +460,9 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
         {
             Action downloadModCompletedAction = () =>
             {
+                if (!File.Exists(downloadFile))
+                    return;
+
                 string zipPath = downloadFile;
                 string mainAppPath = Process.GetCurrentProcess().MainModule.FileName;
                 string appDir = Path.GetDirectoryName(mainAppPath);
