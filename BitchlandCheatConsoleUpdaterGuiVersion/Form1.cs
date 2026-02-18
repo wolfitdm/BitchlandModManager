@@ -5,7 +5,9 @@ using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
 using System.IO.Compression;
 using System.Net;
+using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Security.Policy;
 using System.Text;
 using System.Windows.Forms;
 using TinyJson;
@@ -195,7 +197,6 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
             {
                 using (var client = new WebClient())
                 {
-                    client.DownloadFile(currentDownloadUrl, currentDownloadFile);
                     client.DownloadProgressChanged += (s, e) =>
                     {
                         worker.ReportProgress(e.ProgressPercentage);
@@ -205,6 +206,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
                         worker.ReportProgress(100);
                         // any other code to process the file
                     };
+                    client.DownloadFileTaskAsync(new Uri(currentDownloadUrl), currentDownloadFile).Wait();
                 }
             }
             catch (Exception ex)
