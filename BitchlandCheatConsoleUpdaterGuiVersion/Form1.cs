@@ -1,6 +1,7 @@
 using Microsoft.VisualBasic;
 using System;
 using System.ComponentModel;
+using System.Data.Common;
 using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
 using System.IO;
@@ -107,6 +108,13 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
             }
         }
 
+        private void updateProgressBar(int value)
+        {
+            this.downloadProgressBar.Maximum = 100;
+            this.downloadProgressBar.Step = 1;
+            this.downloadProgressBar.Value = value;
+            this.downloadProgressPercent.Text = value.ToString() + " %"; 
+        }
         private void reinitMods()
         {
             string[] bepInExMods = Directory.GetFiles("BepInExMods");
@@ -270,12 +278,12 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
         private void backgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            downloadProgressBar.Value = e.ProgressPercentage;
+            updateProgressBar(e.ProgressPercentage);
         }
 
         private void backgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            downloadProgressBar.Value = 100;
+            updateProgressBar(100);
 
             if (e.Cancelled)
             {
@@ -301,9 +309,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
                 MessageBox.Show("Download already in progress, please wait!", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
-            this.downloadProgressBar.Maximum = 100;
-            this.downloadProgressBar.Step = 1;
-            this.downloadProgressBar.Value = 5;
+            updateProgressBar(0);
             currentDownloadUrl = downloadUrl;
             currentDownloadFile = downloadFile;
             backgroundWorker.RunWorkerAsync();
@@ -388,10 +394,6 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
             currentModJson = jsonFile;
             currentModJsonFileName = modFile;
-
-            this.downloadProgressBar.Maximum = 100;
-            this.downloadProgressBar.Step = 1;
-            this.downloadProgressBar.Value = 5;
 
             string defaultText = this.UpdateLabel.Text;
 
@@ -481,6 +483,8 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
             {
                 if (!File.Exists(downloadFile))
                     return;
+                updateProgressBar(0);
+                this.UpdateLabel.Text = "";
                 string content = File.ReadAllText(downloadFile);
                 Dictionary<string, string> contentFile = content.FromJson<Dictionary<string, string>>();
                 if (contentFile.TryGetValue("version", out string modVersion))
@@ -716,7 +720,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
                 UpdateLabel.Text = "Download complete. Update complete...";
 
-                downloadProgressBar.Value = 0;
+                updateProgressBar(0);
 
                 UpdateLabel.Text = "";
             };
@@ -1242,7 +1246,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
         {
             string backupDirectory = ingameMod ? "IngameMods_Backups" : "BepInExMods_Backups";
 
-            downloadProgressBar.Value = 0;
+            updateProgressBar(0);
 
             try
             {
@@ -1279,7 +1283,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
                 UpdateLabel.Text = "Backup installed complete...";
 
-                downloadProgressBar.Value = 100;
+                updateProgressBar(100);
 
                 MessageBox.Show("Backup installed complete...", "Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
@@ -1342,9 +1346,9 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
                     return;
                 }
 
-                downloadProgressBar.Value = 0;
+                updateProgressBar(0);
                 string backupCreated = createBackup(false);
-                downloadProgressBar.Value = 100;
+                updateProgressBar(100);
                 MessageBox.Show($"Backup created {backupCreated} complete...", "Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
@@ -1362,9 +1366,9 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
                     return;
                 }
 
-                downloadProgressBar.Value = 0;
+                updateProgressBar(0);
                 string backupCreated = createBackup(true);
-                downloadProgressBar.Value = 100;
+                updateProgressBar(100);
                 MessageBox.Show($"Backup created {backupCreated} complete...", "Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
@@ -1491,6 +1495,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
         private void uninstallMod(string mod, bool isIngameMod)
         {
+            updateProgressBar(0);
             string mainAppPath = Process.GetCurrentProcess().MainModule.FileName;
             string appDir = Path.GetDirectoryName(mainAppPath);
             string extractDirectory = appDir;
@@ -1516,6 +1521,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
             if (!File.Exists(modFile))
             {
+                updateProgressBar(100);
                 MessageBox.Show("Please click on the Get More Mods button in order to fix that error!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
@@ -1528,6 +1534,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
             if (jsonFile == null)
             {
+                updateProgressBar(100);
                 MessageBox.Show("Please click on the Get More Mods button in order to fix that error!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
@@ -1540,6 +1547,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
                 if (!File.Exists(zipPath))
                 {
+                    updateProgressBar(100);
                     MessageBox.Show("Can not found zip archive from this mod, please reinstall this mod, in order to fix that issue!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
@@ -1644,9 +1652,13 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
                         MessageBox.Show($"Directory deleted: {path_}", "Uninstall", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                 }
+
+                updateProgressBar(100);
+                MessageBox.Show($"Uninstall complete", "Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
             {
+                updateProgressBar(100);
                 MessageBox.Show("Please click on the Get More Mods button in order to fix that error!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
@@ -1685,7 +1697,6 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
             }
             catch (Exception ex)
             {
-                throw ex;
             }
         }
 
@@ -1728,79 +1739,100 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
         private void deleteAllModsIncludingBepInEx_Click(object sender, EventArgs e)
         {
-            DialogResult dialogResult = MessageBox.Show($"Sure you want delete all mods including BepInEx? Yes/No/Cancel", "Uninstall", MessageBoxButtons.YesNoCancel);
-
-            DialogResult dialogResult2 = MessageBox.Show($"Would you like to make a backup beforehand? Yes/No/Cancel", "Uninstall", MessageBoxButtons.YesNoCancel);
-
-            bool deleteEverythingIncludingBepInEx = dialogResult == DialogResult.Yes;
-            bool wantCreateBackup = dialogResult2 == DialogResult.Yes;
-
-            if (wantCreateBackup)
+            try
             {
-                createBackup(false);
-                MessageBox.Show("Backup created", "Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-
-            if (deleteEverythingIncludingBepInEx)
-            {
-                if (Directory.Exists("BepInEx/"))
+                if (backgroundWorker.IsBusy)
                 {
-                    Directory.Delete("BepInEx/", recursive: true);
+                    MessageBox.Show("Download already in progress, please wait!", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
                 }
 
-                if (File.Exists("winhttp.dll"))
+                DialogResult dialogResult = MessageBox.Show($"Sure you want delete all mods including BepInEx? Yes/No/Cancel", "Uninstall", MessageBoxButtons.YesNoCancel);
+
+                DialogResult dialogResult2 = MessageBox.Show($"Would you like to make a backup beforehand? Yes/No/Cancel", "Uninstall", MessageBoxButtons.YesNoCancel);
+
+                bool deleteEverythingIncludingBepInEx = dialogResult == DialogResult.Yes;
+                bool wantCreateBackup = dialogResult2 == DialogResult.Yes;
+
+                if (wantCreateBackup)
                 {
-                    File.Delete("winhttp.dll");
+                    createBackup(false);
+                    MessageBox.Show("Backup created", "Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
 
-                if (File.Exists("doorstop_config.ini"))
+                if (deleteEverythingIncludingBepInEx)
                 {
-                    File.Delete("doorstop_config.ini");
+                    if (Directory.Exists("BepInEx/"))
+                    {
+                        Directory.Delete("BepInEx/", recursive: true);
+                    }
+
+                    if (File.Exists("winhttp.dll"))
+                    {
+                        File.Delete("winhttp.dll");
+                    }
+
+                    if (File.Exists("doorstop_config.ini"))
+                    {
+                        File.Delete("doorstop_config.ini");
+                    }
+
+                    if (File.Exists("changelog.txt"))
+                    {
+                        File.Delete("changelog.txt");
+                    }
+
+                    if (File.Exists(".doorstop_version"))
+                    {
+                        File.Delete(".doorstop_version");
+                    }
+
+                    resetBepInExMods();
+
+                    MessageBox.Show("All mods including BepInEx removed", "Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
-
-                if (File.Exists("changelog.txt"))
-                {
-                    File.Delete("changelog.txt");
-                }
-
-                if (File.Exists(".doorstop_version"))
-                {
-                    File.Delete(".doorstop_version");
-                }
-
-                resetBepInExMods();
-
-                MessageBox.Show("All mods including BepInEx removed", "Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            } catch (Exception ex) {
             }
         }
 
         private void deleteAllIngameMods_Click(object sender, EventArgs e)
         {
-            DialogResult dialogResult = MessageBox.Show($"Sure you want delete all mods? Yes/No/Cancel", "Uninstall", MessageBoxButtons.YesNoCancel);
-
-            DialogResult dialogResult2 = MessageBox.Show($"Would you like to make a backup beforehand? Yes/No/Cancel", "Uninstall", MessageBoxButtons.YesNoCancel);
-
-            bool deleteEverything = dialogResult == DialogResult.Yes;
-            bool wantCreateBackup = dialogResult2 == DialogResult.Yes;
-
-            if (wantCreateBackup)
+            try
             {
-                createBackup(true);
-                MessageBox.Show("Backup created", "Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-
-            if (deleteEverything)
-            {
-                if (Directory.Exists("Assets/Mods/"))
+                if (backgroundWorker.IsBusy)
                 {
-                    Directory.Delete("Assets/Mods/", recursive: true);
+                    MessageBox.Show("Download already in progress, please wait!", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
                 }
 
-                Directory.CreateDirectory("Assets/Mods");
+                DialogResult dialogResult = MessageBox.Show($"Sure you want delete all mods? Yes/No/Cancel", "Uninstall", MessageBoxButtons.YesNoCancel);
 
-                resetIngameMods();
+                DialogResult dialogResult2 = MessageBox.Show($"Would you like to make a backup beforehand? Yes/No/Cancel", "Uninstall", MessageBoxButtons.YesNoCancel);
 
-                MessageBox.Show("All mods removed", "Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                bool deleteEverything = dialogResult == DialogResult.Yes;
+                bool wantCreateBackup = dialogResult2 == DialogResult.Yes;
+
+                if (wantCreateBackup)
+                {
+                    createBackup(true);
+                    MessageBox.Show("Backup created", "Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+
+                if (deleteEverything)
+                {
+                    if (Directory.Exists("Assets/Mods/"))
+                    {
+                        Directory.Delete("Assets/Mods/", recursive: true);
+                    }
+
+                    Directory.CreateDirectory("Assets/Mods");
+
+                    resetIngameMods();
+
+                    MessageBox.Show("All mods removed", "Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            } catch (Exception ex)
+            {
             }
         }
     }

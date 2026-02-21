@@ -53,6 +53,7 @@
             Uninstall2 = new Button();
             deleteAllModsIncludingBepInEx = new Button();
             deleteAllIngameMods = new Button();
+            downloadProgressPercent = new Label();
             SuspendLayout();
             // 
             // button1
@@ -287,11 +288,21 @@
             deleteAllIngameMods.UseVisualStyleBackColor = true;
             deleteAllIngameMods.Click += deleteAllIngameMods_Click;
             // 
+            // downloadProgressPercent
+            // 
+            downloadProgressPercent.AutoSize = true;
+            downloadProgressPercent.Location = new Point(594, 40);
+            downloadProgressPercent.Name = "downloadProgressPercent";
+            downloadProgressPercent.Size = new Size(26, 15);
+            downloadProgressPercent.TabIndex = 26;
+            downloadProgressPercent.Text = "0 %";
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(778, 455);
+            Controls.Add(downloadProgressPercent);
             Controls.Add(deleteAllIngameMods);
             Controls.Add(deleteAllModsIncludingBepInEx);
             Controls.Add(Uninstall2);
@@ -350,5 +361,6 @@
         private Button Uninstall2;
         private Button deleteAllModsIncludingBepInEx;
         private Button deleteAllIngameMods;
+        private Label downloadProgressPercent;
     }
 }
