@@ -54,6 +54,12 @@
             deleteAllModsIncludingBepInEx = new Button();
             deleteAllIngameMods = new Button();
             downloadProgressPercent = new Label();
+            removeBepInExModsBackup = new Button();
+            removeIngameModBackup = new Button();
+            removeAllBepInExModsBackups = new Button();
+            removeAllIngameModsBackups = new Button();
+            uninstallBepInExBackup = new Button();
+            uninstallIngameModBackup = new Button();
             SuspendLayout();
             // 
             // button1
@@ -148,7 +154,7 @@
             // 
             getmoremods.Location = new Point(12, 261);
             getmoremods.Name = "getmoremods";
-            getmoremods.Size = new Size(576, 23);
+            getmoremods.Size = new Size(745, 23);
             getmoremods.TabIndex = 11;
             getmoremods.Text = "Get More Mods";
             getmoremods.UseVisualStyleBackColor = true;
@@ -297,11 +303,77 @@
             downloadProgressPercent.TabIndex = 26;
             downloadProgressPercent.Text = "0 %";
             // 
+            // removeBepInExModsBackup
+            // 
+            removeBepInExModsBackup.Location = new Point(682, 337);
+            removeBepInExModsBackup.Name = "removeBepInExModsBackup";
+            removeBepInExModsBackup.Size = new Size(75, 23);
+            removeBepInExModsBackup.TabIndex = 27;
+            removeBepInExModsBackup.Text = "Delete";
+            removeBepInExModsBackup.UseVisualStyleBackColor = true;
+            removeBepInExModsBackup.Click += removeBepInExModsBackup_Click;
+            // 
+            // removeIngameModBackup
+            // 
+            removeIngameModBackup.Location = new Point(682, 404);
+            removeIngameModBackup.Name = "removeIngameModBackup";
+            removeIngameModBackup.Size = new Size(75, 23);
+            removeIngameModBackup.TabIndex = 28;
+            removeIngameModBackup.Text = "Delete";
+            removeIngameModBackup.UseVisualStyleBackColor = true;
+            removeIngameModBackup.Click += removeIngameModBackup_Click;
+            // 
+            // removeAllBepInExModsBackups
+            // 
+            removeAllBepInExModsBackups.Location = new Point(156, 301);
+            removeAllBepInExModsBackups.Name = "removeAllBepInExModsBackups";
+            removeAllBepInExModsBackups.Size = new Size(135, 23);
+            removeAllBepInExModsBackups.TabIndex = 29;
+            removeAllBepInExModsBackups.Text = "Delete all backups";
+            removeAllBepInExModsBackups.UseVisualStyleBackColor = true;
+            removeAllBepInExModsBackups.Click += removeAllBepInExModsBackups_Click;
+            // 
+            // removeAllIngameModsBackups
+            // 
+            removeAllIngameModsBackups.Location = new Point(159, 374);
+            removeAllIngameModsBackups.Name = "removeAllIngameModsBackups";
+            removeAllIngameModsBackups.Size = new Size(132, 23);
+            removeAllIngameModsBackups.TabIndex = 30;
+            removeAllIngameModsBackups.Text = "Delete all backups";
+            removeAllIngameModsBackups.UseVisualStyleBackColor = true;
+            removeAllIngameModsBackups.Click += removeAllIngameModsBackups_Click;
+            // 
+            // uninstallBepInExBackup
+            // 
+            uninstallBepInExBackup.Location = new Point(601, 337);
+            uninstallBepInExBackup.Name = "uninstallBepInExBackup";
+            uninstallBepInExBackup.Size = new Size(75, 23);
+            uninstallBepInExBackup.TabIndex = 31;
+            uninstallBepInExBackup.Text = "Uninstall";
+            uninstallBepInExBackup.UseVisualStyleBackColor = true;
+            uninstallBepInExBackup.Click += uninstallBepInExBackup_Click;
+            // 
+            // uninstallIngameModBackup
+            // 
+            uninstallIngameModBackup.Location = new Point(601, 405);
+            uninstallIngameModBackup.Name = "uninstallIngameModBackup";
+            uninstallIngameModBackup.Size = new Size(75, 23);
+            uninstallIngameModBackup.TabIndex = 32;
+            uninstallIngameModBackup.Text = "Uninstall";
+            uninstallIngameModBackup.UseVisualStyleBackColor = true;
+            uninstallIngameModBackup.Click += uninstallIngameModBackup_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(778, 455);
+            Controls.Add(uninstallIngameModBackup);
+            Controls.Add(uninstallBepInExBackup);
+            Controls.Add(removeAllIngameModsBackups);
+            Controls.Add(removeAllBepInExModsBackups);
+            Controls.Add(removeIngameModBackup);
+            Controls.Add(removeBepInExModsBackup);
             Controls.Add(downloadProgressPercent);
             Controls.Add(deleteAllIngameMods);
             Controls.Add(deleteAllModsIncludingBepInEx);
@@ -362,5 +434,11 @@
         private Button deleteAllModsIncludingBepInEx;
         private Button deleteAllIngameMods;
         private Label downloadProgressPercent;
+        private Button removeBepInExModsBackup;
+        private Button removeIngameModBackup;
+        private Button removeAllBepInExModsBackups;
+        private Button removeAllIngameModsBackups;
+        private Button uninstallBepInExBackup;
+        private Button uninstallIngameModBackup;
     }
 }
