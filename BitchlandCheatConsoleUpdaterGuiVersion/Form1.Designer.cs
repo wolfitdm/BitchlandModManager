@@ -49,6 +49,10 @@
             button6 = new Button();
             helpBepInExMods = new Button();
             helpIngameMods = new Button();
+            Uninstall = new Button();
+            Uninstall2 = new Button();
+            deleteAllModsIncludingBepInEx = new Button();
+            deleteAllIngameMods = new Button();
             SuspendLayout();
             // 
             // button1
@@ -225,7 +229,7 @@
             // 
             // helpBepInExMods
             // 
-            helpBepInExMods.Location = new Point(601, 112);
+            helpBepInExMods.Location = new Point(682, 112);
             helpBepInExMods.Name = "helpBepInExMods";
             helpBepInExMods.Size = new Size(75, 23);
             helpBepInExMods.TabIndex = 20;
@@ -235,7 +239,7 @@
             // 
             // helpIngameMods
             // 
-            helpIngameMods.Location = new Point(601, 205);
+            helpIngameMods.Location = new Point(682, 205);
             helpIngameMods.Name = "helpIngameMods";
             helpIngameMods.Size = new Size(75, 23);
             helpIngameMods.TabIndex = 21;
@@ -243,11 +247,55 @@
             helpIngameMods.UseVisualStyleBackColor = true;
             helpIngameMods.Click += helpIngameMods_Click;
             // 
+            // Uninstall
+            // 
+            Uninstall.Location = new Point(601, 112);
+            Uninstall.Name = "Uninstall";
+            Uninstall.Size = new Size(75, 23);
+            Uninstall.TabIndex = 22;
+            Uninstall.Text = "Uninstall";
+            Uninstall.UseVisualStyleBackColor = true;
+            Uninstall.Click += Uninstall_Click;
+            // 
+            // Uninstall2
+            // 
+            Uninstall2.Location = new Point(601, 205);
+            Uninstall2.Name = "Uninstall2";
+            Uninstall2.Size = new Size(75, 23);
+            Uninstall2.TabIndex = 23;
+            Uninstall2.Text = "Uninstall";
+            Uninstall2.UseVisualStyleBackColor = true;
+            Uninstall2.Click += Uninstall2_Click;
+            // 
+            // deleteAllModsIncludingBepInEx
+            // 
+            deleteAllModsIncludingBepInEx.Location = new Point(310, 73);
+            deleteAllModsIncludingBepInEx.Name = "deleteAllModsIncludingBepInEx";
+            deleteAllModsIncludingBepInEx.Size = new Size(447, 23);
+            deleteAllModsIncludingBepInEx.TabIndex = 24;
+            deleteAllModsIncludingBepInEx.Text = "Delete all mods including bepinex";
+            deleteAllModsIncludingBepInEx.UseVisualStyleBackColor = true;
+            deleteAllModsIncludingBepInEx.Click += deleteAllModsIncludingBepInEx_Click;
+            // 
+            // deleteAllIngameMods
+            // 
+            deleteAllIngameMods.Location = new Point(310, 158);
+            deleteAllIngameMods.Name = "deleteAllIngameMods";
+            deleteAllIngameMods.Size = new Size(447, 23);
+            deleteAllIngameMods.TabIndex = 25;
+            deleteAllIngameMods.Text = "Delete all ingame mods";
+            deleteAllIngameMods.UseVisualStyleBackColor = true;
+            deleteAllIngameMods.Click += deleteAllIngameMods_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(690, 455);
+            ClientSize = new Size(778, 455);
+            Controls.Add(deleteAllIngameMods);
+            Controls.Add(deleteAllModsIncludingBepInEx);
+            Controls.Add(Uninstall2);
+            Controls.Add(Uninstall);
             Controls.Add(helpIngameMods);
             Controls.Add(helpBepInExMods);
             Controls.Add(button6);
@@ -298,5 +346,9 @@
         private Button button6;
         private Button helpBepInExMods;
         private Button helpIngameMods;
+        private Button Uninstall;
+        private Button Uninstall2;
+        private Button deleteAllModsIncludingBepInEx;
+        private Button deleteAllIngameMods;
     }
 }
