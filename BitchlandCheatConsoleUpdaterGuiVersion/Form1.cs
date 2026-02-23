@@ -269,6 +269,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
                     client.DownloadFileCompleted += (s, e) =>
                     {
                         worker.ReportProgress(100);
+                        sw.Stop();
                         // any other code to process the file
                     };
                     sw.Start();
