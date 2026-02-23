@@ -14,10 +14,21 @@ using System.Security.Policy;
 using System.Text;
 using System.Windows.Forms;
 using TinyJson;
-using BitchlandCheatConsoleUpdaterGuiVersion;
 
 namespace BitchlandCheatConsoleUpdaterGuiVersion
 {
+    class DownoadSpeedHolder
+    {
+        public TimeSpan elapsed;
+        public long bytesReceived;
+
+        public void DownloadSpeedHolder(TimeSpan elapsed, long bytesReceived)
+        {
+            this.elapsed = elapsed;
+            this.bytesReceived = bytesReceived;
+        }
+    }
+
     public partial class Form1 : Form
     {
         private BackgroundWorker backgroundWorker;
@@ -295,7 +306,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
                 if (seconds > 0)
                 {
                     double speed = bytesReceived / seconds; // bytes per second
-                    string speedText = $"Download speed: {(speed / 1024d / 1024d):0.00} MB/s";
+                    string speedText = $"{(speed / 1024d / 1024d):0.00} MB/s";
 
                     this.downloadSpeed.Text = speedText;
                 }
@@ -491,7 +502,6 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
                     return;
                 updateProgressBar(0);
                 this.UpdateLabel.Text = "";
-                this.downloadSpeed.Text = "Download speed: 0 MB/s";
                 string content = File.ReadAllText(downloadFile);
                 Dictionary<string, string> contentFile = content.FromJson<Dictionary<string, string>>();
                 if (contentFile.TryGetValue("version", out string modVersion))
@@ -730,7 +740,6 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
                 updateProgressBar(0);
 
                 UpdateLabel.Text = "";
-                this.downloadSpeed.Text = "Download speed: 0 MB/s";
             };
 
             if (downloadFiles.Length == 2)

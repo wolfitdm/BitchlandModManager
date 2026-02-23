@@ -60,6 +60,7 @@
             removeAllIngameModsBackups = new Button();
             uninstallBepInExBackup = new Button();
             uninstallIngameModBackup = new Button();
+            downloadSpeed = new Label();
             SuspendLayout();
             // 
             // button1
@@ -363,11 +364,21 @@
             uninstallIngameModBackup.UseVisualStyleBackColor = true;
             uninstallIngameModBackup.Click += uninstallIngameModBackup_Click;
             // 
+            // downloadSpeed
+            // 
+            downloadSpeed.AutoSize = true;
+            downloadSpeed.Location = new Point(450, 12);
+            downloadSpeed.Name = "downloadSpeed";
+            downloadSpeed.Size = new Size(138, 15);
+            downloadSpeed.TabIndex = 33;
+            downloadSpeed.Text = "Download speed: 0 MB/s";
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(778, 455);
+            ClientSize = new Size(772, 455);
+            Controls.Add(downloadSpeed);
             Controls.Add(uninstallIngameModBackup);
             Controls.Add(uninstallBepInExBackup);
             Controls.Add(removeAllIngameModsBackups);
@@ -440,5 +451,6 @@
         private Button removeAllIngameModsBackups;
         private Button uninstallBepInExBackup;
         private Button uninstallIngameModBackup;
+        private Label downloadSpeed;
     }
 }
