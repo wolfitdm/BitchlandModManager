@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "teVYmXdc5/o=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\ABC\\source\\repos\\BitchlandCheatConsoleUpdaterGuiVersion\\BitchlandCheatConsoleUpdaterGuiVersion\\BitchlandModManager.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\ABC\\.nuget\\packages\\nulastudio.netbeauty\\2.1.4.6\\nulastudio.netbeauty.2.1.4.6.nupkg.sha512"
+  ],
+  "logs": []
+}

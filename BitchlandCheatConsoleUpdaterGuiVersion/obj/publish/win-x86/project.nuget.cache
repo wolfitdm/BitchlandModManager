@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "dgSpecHash": "jC3W1BQCooc=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\ABC\\source\\repos\\BitchlandCheatConsoleUpdaterGuiVersion\\BitchlandCheatConsoleUpdaterGuiVersion\\BitchlandModManager.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\ABC\\.nuget\\packages\\nulastudio.netbeauty\\2.1.4.6\\nulastudio.netbeauty.2.1.4.6.nupkg.sha512",
+    "C:\\Users\\ABC\\.nuget\\packages\\microsoft.netcore.app.runtime.win-x86\\8.0.25\\microsoft.netcore.app.runtime.win-x86.8.0.25.nupkg.sha512",
+    "C:\\Users\\ABC\\.nuget\\packages\\microsoft.windowsdesktop.app.runtime.win-x86\\8.0.25\\microsoft.windowsdesktop.app.runtime.win-x86.8.0.25.nupkg.sha512",
+    "C:\\Users\\ABC\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.win-x86\\8.0.25\\microsoft.aspnetcore.app.runtime.win-x86.8.0.25.nupkg.sha512"
+  ],
+  "logs": []
+}
