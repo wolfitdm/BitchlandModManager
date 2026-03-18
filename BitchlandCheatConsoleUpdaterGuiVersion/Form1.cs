@@ -118,6 +118,18 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
             this.downloadProgressBar.Value = value;
             this.downloadProgressPercent.Text = value.ToString() + " %";
         }
+
+        private void isCorrectInstalled()
+        {
+            try
+            {
+                if (!File.Exists("Bitch Land.exe"))
+                {
+                    MessageBox.Show("Please extract the ModManager to the same location as Bitch Land.exe. Example:\r\n\r\n.\\Bitch Land.exe\r\n.\\BitchlandModManager.exe\r\n\r\nSee Link:\r\n\r\nhttps://github.com/wolfitdm/BitchlandModManager/releases/tag/1.0.0", "Not correct installed", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    OpenUrl("https://github.com/wolfitdm/BitchlandModManager/releases/tag/1.0.0");
+                }
+            } catch { }
+        }
         private void reinitMods()
         {
             string[] bepInExMods = Directory.GetFiles("BepInExMods");
@@ -972,6 +984,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
         private void button1_Click(object sender, EventArgs e)
         {
+            isCorrectInstalled();
             try
             {
                 if (currentBepInExMod == null || currentBepInExMod.Length == 0)
@@ -999,6 +1012,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
         private void button2_Click(object sender, EventArgs e)
         {
+            isCorrectInstalled();
             try
             {
                 if (currentIngameMod == null || currentIngameMod.Length == 0)
@@ -1021,6 +1035,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
         private void getmoremods_Click(object sender, EventArgs e)
         {
+            isCorrectInstalled();
             try
             {
                 if (backgroundWorker.IsBusy)
@@ -1350,6 +1365,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
         private void button3_Click(object sender, EventArgs e)
         {
+            isCorrectInstalled();
             try
             {
                 if (currentBepInExModsBackup == null || currentBepInExModsBackup.Length == 0)
@@ -1372,6 +1388,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
         private void button4_Click(object sender, EventArgs e)
         {
+            isCorrectInstalled();
             try
             {
                 if (currentIngameModsBackup == null || currentIngameModsBackup.Length == 0)
@@ -1394,6 +1411,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
         private void button5_Click(object sender, EventArgs e)
         {
+            isCorrectInstalled();
             try
             {
                 if (backgroundWorker.IsBusy)
@@ -1414,6 +1432,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
         private void button6_Click(object sender, EventArgs e)
         {
+            isCorrectInstalled();
             try
             {
                 if (backgroundWorker.IsBusy)
@@ -1466,6 +1485,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
         }
         private void helpBepInExMods_Click(object sender, EventArgs e)
         {
+            isCorrectInstalled();
             try
             {
                 if (backgroundWorker.IsBusy)
@@ -1506,6 +1526,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
         private void helpIngameMods_Click(object sender, EventArgs e)
         {
+            isCorrectInstalled();
             try
             {
                 if (backgroundWorker.IsBusy)
@@ -1805,6 +1826,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
         private void Uninstall2_Click(object sender, EventArgs e)
         {
+            isCorrectInstalled();
             try
             {
                 if (currentIngameMod == null || currentIngameMod.Length == 0)
@@ -1841,6 +1863,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
         private void Uninstall_Click(object sender, EventArgs e)
         {
+            isCorrectInstalled();
             try
             {
                 if (currentBepInExMod == null || currentBepInExMod.Length == 0)
@@ -1877,6 +1900,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
         private void deleteAllModsIncludingBepInEx_Click(object sender, EventArgs e)
         {
+            isCorrectInstalled();
             try
             {
                 if (backgroundWorker.IsBusy)
@@ -1937,6 +1961,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
         private void deleteAllIngameMods_Click(object sender, EventArgs e)
         {
+            isCorrectInstalled();
             try
             {
                 if (backgroundWorker.IsBusy)
@@ -1979,6 +2004,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
         private void removeAllBepInExModsBackups_Click(object sender, EventArgs e)
         {
+            isCorrectInstalled();
             try
             {
                 DialogResult dialogResult = MessageBox.Show($"Sure you want delete all mods backups? Yes/No/Cancel", "Uninstall", MessageBoxButtons.YesNoCancel);
@@ -2020,6 +2046,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
         private void removeAllIngameModsBackups_Click(object sender, EventArgs e)
         {
+            isCorrectInstalled();
             try
             {
                 DialogResult dialogResult = MessageBox.Show($"Sure you want delete all mods backups? Yes/No/Cancel", "Uninstall", MessageBoxButtons.YesNoCancel);
@@ -2061,6 +2088,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
         private void removeBepInExModsBackup_Click(object sender, EventArgs e)
         {
+            isCorrectInstalled();
             try
             {
                 string thisBackup = currentBepInExModsBackup;
@@ -2112,6 +2140,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
         private void removeIngameModBackup_Click(object sender, EventArgs e)
         {
+            isCorrectInstalled();
             try
             {
                 string thisBackup = currentIngameModsBackup;
@@ -2163,6 +2192,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
         private void uninstallBepInExBackup_Click(object sender, EventArgs e)
         {
+            isCorrectInstalled();
             try
             {
                 string thisBackup = currentBepInExModsBackup;
@@ -2214,6 +2244,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
         private void uninstallIngameModBackup_Click(object sender, EventArgs e)
         {
+            isCorrectInstalled();
             try
             {
                 string thisBackup = currentIngameModsBackup;
