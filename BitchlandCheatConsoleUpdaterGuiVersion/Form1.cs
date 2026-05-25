@@ -233,7 +233,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
                     jsonFile["version"] = "v1.0.0";
 
-                    File.WriteAllText(file, jsonFile.ToJson());
+                    File.WriteAllText(bepInExMods[i], jsonFile.ToJson());
                 }
                 catch (Exception ex)
                 {
@@ -258,7 +258,7 @@ namespace BitchlandCheatConsoleUpdaterGuiVersion
 
                     jsonFile["version"] = "v1.0.0";
 
-                    File.WriteAllText(file, jsonFile.ToJson());
+                    File.WriteAllText(ingameMods[i], jsonFile.ToJson());
                 }
                 catch (Exception ex)
                 {
